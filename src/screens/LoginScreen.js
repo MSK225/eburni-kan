@@ -1,19 +1,22 @@
-import { useState } from "react";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
 
   function seConnecter() {
-    navigation.replace("Main");
+    router.replace("/(tabs)");
   }
 
   return (
@@ -21,36 +24,44 @@ export default function LoginScreen({ navigation }) {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <Text style={styles.emoji}>🌍</Text>
-      <Text style={styles.titre}>EBURNI-KAN</Text>
-      <Text style={styles.sousTitre}>Apprends ta langue ivoirienne</Text>
+      {/* Logo et titre */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.titre}>EBURNI-KAN</Text>
+        <Text style={styles.slogan}>Mandingue kan kalan duman</Text>
+      </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+      {/* Formulaire */}
+      <View style={styles.formulaire}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Mot de passe"
-        value={motDePasse}
-        onChangeText={setMotDePasse}
-        secureTextEntry
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Mot de passe"
+          placeholderTextColor="#888"
+          value={motDePasse}
+          onChangeText={setMotDePasse}
+          secureTextEntry
+        />
 
-      <TouchableOpacity style={styles.bouton} onPress={seConnecter}>
-        <Text style={styles.boutonTexte}>Se connecter</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.bouton} onPress={seConnecter}>
+          <Text style={styles.boutonTexte}>SE CONNECTER</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity>
-        <Text style={styles.lienInscription}>
-          Pas encore de compte ? S'inscrire
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.boutonInscription}>
+          <Text style={styles.boutonInscriptionTexte}>
+            Pas encore de compte ?{" "}
+            <Text style={styles.lienInscription}>S'inscrire</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -58,50 +69,63 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1A1A2E",
+    backgroundColor: "#1A237E",
     alignItems: "center",
     justifyContent: "center",
     padding: 24,
   },
-  emoji: {
-    fontSize: 60,
-    marginBottom: 16,
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 48,
   },
   titre: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: "bold",
-    color: "#E8A020",
-    marginBottom: 8,
+    color: "#FBC02D",
+    letterSpacing: 3,
+    textTransform: "uppercase",
   },
-  sousTitre: {
-    fontSize: 16,
-    color: "#aaa",
-    marginBottom: 40,
+  slogan: {
+    fontSize: 14,
+    color: "#F9F7F2",
+    marginTop: 8,
+    fontStyle: "italic",
+    textAlign: "center",
+  },
+  formulaire: {
+    width: "100%",
   },
   input: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: "#F9F7F2",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     fontSize: 16,
+    color: "#212121",
   },
   bouton: {
     width: "100%",
-    backgroundColor: "#E8A020",
+    backgroundColor: "#FBC02D",
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
     marginTop: 8,
+    elevation: 4,
   },
   boutonTexte: {
-    color: "#fff",
+    color: "#1A237E",
     fontWeight: "bold",
-    fontSize: 18,
+    fontSize: 16,
+    letterSpacing: 1,
   },
+  boutonInscription: {
+    alignItems: "center",
+    marginTop: 24,
+  },
+  boutonInscriptionTexte: { color: "#F9F7F2", fontSize: 14 },
   lienInscription: {
-    color: "#E8A020",
-    marginTop: 20,
-    fontSize: 14,
+    color: "#FBC02D",
+    fontWeight: "bold",
   },
 });
