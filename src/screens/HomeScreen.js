@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import React from "react";
 import {
     ScrollView,
     StyleSheet,
@@ -16,7 +15,7 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.salutation}>Akwaba 👋</Text>
+          <Text style={styles.salutation}>I ni ce 👋</Text>
           <Text style={styles.sousTitre}>Bonne continuation !</Text>
         </View>
         <TouchableOpacity style={styles.avatarContainer}>
@@ -27,9 +26,9 @@ export default function HomeScreen() {
       {/* Mot du jour */}
       <View style={styles.carteMotDuJour}>
         <Text style={styles.carteLabel}>✨ MOT DU JOUR</Text>
-        <Text style={styles.motDuJour}>Akwaba</Text>
-        <Text style={styles.traduction}>Bienvenue — Baoulé</Text>
-        <Text style={styles.prononciation}>🔊 A-kwa-ba</Text>
+        <Text style={styles.motDuJour}>I ni ce</Text>
+        <Text style={styles.traduction}>Bonjour (matin) — Bambara</Text>
+        <Text style={styles.prononciation}>🔊 I-ni-cé</Text>
       </View>
 
       {/* Progression */}
