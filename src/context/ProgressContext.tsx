@@ -18,6 +18,7 @@ type Difficulty = "Facile" | "Moyen" | "Difficile";
 
 type ProgressState = {
   completedLessons: number[];
+  completedModules: string[];
   quizCorrect: number;
   quizTotal: number;
   synced: boolean;
@@ -27,6 +28,7 @@ type ProgressState = {
 type ProgressContextType = {
   progress: ProgressState;
   markLessonCompleted: (id: number) => void;
+  markModuleCompleted: (moduleId: string) => void;
   recordEvent: (event: Omit<ProgressEvent, "id" | "synced">) => Promise<void>;
   syncProgress: () => Promise<void>;
   difficulty: Difficulty;
@@ -47,6 +49,7 @@ export function useProgress() {
 export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const [progress, setProgress] = useState<ProgressState>({
     completedLessons: [1],
+    completedModules: [],
     quizCorrect: 0,
     quizTotal: 0,
     synced: true,
@@ -62,6 +65,19 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
         : {
             ...prev,
             completedLessons: [...prev.completedLessons, id],
+            synced: false,
+            offline: true,
+          },
+    );
+  };
+
+  const markModuleCompleted = (moduleId: string) => {
+    setProgress((prev) =>
+      prev.completedModules.includes(moduleId)
+        ? prev
+        : {
+            ...prev,
+            completedModules: [...prev.completedModules, moduleId],
             synced: false,
             offline: true,
           },
@@ -91,6 +107,13 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       typeof event.lessonId === "number"
     ) {
       markLessonCompleted(event.lessonId);
+    }
+
+    if (
+      event.type === "interactive_module_completed" &&
+      typeof event.moduleId === "string"
+    ) {
+      markModuleCompleted(event.moduleId);
     }
 
     if (event.type === "quiz_answer") {
@@ -134,6 +157,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       value={{
         progress,
         markLessonCompleted,
+        markModuleCompleted,
         difficulty,
         recordEvent,
         syncProgress,

@@ -7,9 +7,15 @@ let asyncStorageAvailable = true;
 
 export type ProgressEvent = {
   id: string;
-  type: "lesson_view" | "quiz_answer" | "lesson_completed" | "game_session";
+  type:
+    | "lesson_view"
+    | "quiz_answer"
+    | "lesson_completed"
+    | "game_session"
+    | "interactive_module_completed";
   userId?: string;
   lessonId?: number;
+  moduleId?: string;
   questionId?: number;
   correct?: boolean;
   score?: number;

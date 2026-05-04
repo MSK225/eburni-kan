@@ -25,6 +25,22 @@ export const badges: Badge[] = [
     criteria: (progress) => progress.completedLessons.length >= 3,
   },
   {
+    id: "interactive_beginner",
+    name: "Explorateur interactif",
+    description: "Terminez un module interactif",
+    icon: "sparkles",
+    color: "#00ACC1",
+    criteria: (progress) => progress.completedModules.length >= 1,
+  },
+  {
+    id: "interactive_pro",
+    name: "Polyvalent interactif",
+    description: "Terminez 3 modules interactifs",
+    icon: "star.circle.fill",
+    color: "#8E24AA",
+    criteria: (progress) => progress.completedModules.length >= 3,
+  },
+  {
     id: "dedicated",
     name: "Dévoué",
     description: "Complétez 5 leçons",

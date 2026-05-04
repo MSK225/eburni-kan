@@ -1,14 +1,14 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-    User,
-    createUserWithEmailAndPassword,
-    deleteUser,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signOut,
+  createUserWithEmailAndPassword,
+  deleteUser,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  User,
 } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../config/firebase";
+import { auth, SKIP_AUTH } from "../config/firebase";
 
 const AUTH_STORAGE_KEY = "@eburni_auth_user";
 
@@ -36,8 +36,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Charger l'utilisateur depuis AsyncStorage au démarrage
+  // MODE DÉVELOPPEMENT : Simuler un utilisateur connecté
   useEffect(() => {
+    if (SKIP_AUTH) {
+      console.log("🔧 MODE DÉVELOPPEMENT : Authentification désactivée");
+      // Créer un utilisateur fictif pour les tests
+      const fakeUser = {
+        uid: "dev-user-123",
+        email: "dev@example.com",
+        displayName: "Utilisateur Test",
+        emailVerified: true,
+      } as User;
+
+      setUser(fakeUser);
+      setLoading(false);
+      return;
+    }
+  }, []);
+
+  // Charger l'utilisateur depuis AsyncStorage au démarrage (mode production uniquement)
+  useEffect(() => {
+    if (SKIP_AUTH) return; // Ne pas charger en mode dev
+
     const loadPersistedUser = async () => {
       try {
         const persistedUser = await AsyncStorage.getItem(AUTH_STORAGE_KEY);
@@ -53,8 +73,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadPersistedUser();
   }, []);
 
-  // Écouter les changements d'état d'authentification Firebase
+  // Écouter les changements d'état d'authentification Firebase (mode production uniquement)
   useEffect(() => {
+    if (SKIP_AUTH) return; // Ne pas écouter Firebase en mode dev
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
@@ -88,6 +110,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (SKIP_AUTH) {
+      // MODE DÉVELOPPEMENT : Simuler une connexion réussie
+      console.log("🔧 MODE DÉVELOPPEMENT : Connexion simulée");
+      const fakeUser = {
+        uid: "dev-user-123",
+        email,
+        displayName: "Utilisateur Test",
+        emailVerified: true,
+      } as User;
+      setUser(fakeUser);
+      return;
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
@@ -96,6 +131,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
+    if (SKIP_AUTH) {
+      // MODE DÉVELOPPEMENT : Simuler une inscription réussie
+      console.log("🔧 MODE DÉVELOPPEMENT : Inscription simulée");
+      const fakeUser = {
+        uid: "dev-user-123",
+        email,
+        displayName: "Utilisateur Test",
+        emailVerified: true,
+      } as User;
+      setUser(fakeUser);
+      return;
+    }
+
     try {
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
@@ -104,6 +152,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    if (SKIP_AUTH) {
+      // MODE DÉVELOPPEMENT : Simuler une déconnexion
+      console.log("🔧 MODE DÉVELOPPEMENT : Déconnexion simulée");
+      setUser(null);
+      return;
+    }
+
     try {
       await signOut(auth);
     } catch (error) {
@@ -113,6 +168,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteAccount = async () => {
+    if (SKIP_AUTH) {
+      // MODE DÉVELOPPEMENT : Simuler une suppression
+      console.log("🔧 MODE DÉVELOPPEMENT : Suppression simulée");
+      setUser(null);
+      return;
+    }
+
     if (!user) {
       throw new Error("Aucun utilisateur connecté");
     }

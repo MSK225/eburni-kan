@@ -87,6 +87,12 @@ export default function ProfilScreen() {
           <Text style={styles.metricValue}>{progress.quizTotal}</Text>
         </View>
         <View style={styles.row}>
+          <Text style={styles.metricLabel}>Modules interactifs complétés</Text>
+          <Text style={styles.metricValue}>
+            {progress.completedModules.length}
+          </Text>
+        </View>
+        <View style={styles.row}>
           <Text style={styles.metricLabel}>Précision quiz</Text>
           <Text style={styles.metricValue}>{accuracy}%</Text>
         </View>

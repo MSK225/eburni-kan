@@ -1,59 +1,118 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
+import { useAuth } from "../src/context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [motDePasse, setMotDePasse] = useState("");
+  const { signIn, signUp } = useAuth();
 
-  function seConnecter() {
-    router.replace("/(tabs)");
-  }
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!email || !password) {
+      Alert.alert("Erreur", "Veuillez remplir tous les champs.");
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert(
+        "Erreur",
+        "Le mot de passe doit contenir au moins 6 caractères.",
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (isSignUp) {
+        await signUp(email, password);
+        Alert.alert("Succès", "Compte créé avec succès !");
+      } else {
+        await signIn(email, password);
+      }
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      Alert.alert("Erreur", error.message || "Impossible de se connecter.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.headerContainer}>
-        <Text style={styles.titre}>EBURNI-KAN</Text>
-        <Text style={styles.slogan}>Mandingue kan kalan duman</Text>
+      <View style={styles.brandContainer}>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>Bienvenue</Text>
+        </View>
+        <Text style={styles.title}>Eburni-kan</Text>
+        <Text style={styles.subtitle}>Apprenez le bambara avec plaisir</Text>
       </View>
 
-      <View style={styles.formulaire}>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>
+          {isSignUp ? "Créer un compte" : "Se connecter"}
+        </Text>
+
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#888"
+          placeholder="Adresse email"
+          placeholderTextColor="#94A3B8"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
+          autoCorrect={false}
         />
+
         <TextInput
           style={styles.input}
           placeholder="Mot de passe"
-          placeholderTextColor="#888"
-          value={motDePasse}
-          onChangeText={setMotDePasse}
+          placeholderTextColor="#94A3B8"
+          value={password}
+          onChangeText={setPassword}
           secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
         />
-        <TouchableOpacity style={styles.bouton} onPress={seConnecter}>
-          <Text style={styles.boutonTexte}>SE CONNECTER</Text>
+
+        <TouchableOpacity
+          style={[styles.actionButton, loading && styles.actionButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          <Text style={styles.actionButtonText}>
+            {loading
+              ? "Chargement..."
+              : isSignUp
+                ? "Créer mon compte"
+                : "Se connecter"}
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.boutonInscription}>
-          <Text style={styles.boutonInscriptionTexte}>
-            Pas encore de compte ?{" "}
-            <Text style={styles.lienInscription}>S'inscrire</Text>
+
+        <TouchableOpacity
+          style={styles.switchButton}
+          onPress={() => setIsSignUp(!isSignUp)}
+        >
+          <Text style={styles.switchButtonText}>
+            {isSignUp
+              ? "Vous avez déjà un compte ? Se connecter"
+              : "Pas encore de compte ? S'inscrire"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -64,66 +123,91 @@ export default function LoginPage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1A237E",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "#F8FAFC",
     padding: 24,
+    justifyContent: "center",
   },
-  headerContainer: {
+  brandContainer: {
     alignItems: "center",
-    marginBottom: 48,
+    marginBottom: 24,
   },
-  titre: {
-    fontSize: 42,
-    fontWeight: "bold",
-    color: "#FBC02D",
-    letterSpacing: 3,
-    textTransform: "uppercase",
+  badge: {
+    backgroundColor: "#D1FAE5",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 999,
+    marginBottom: 12,
   },
-  slogan: {
-    fontSize: 14,
-    color: "#F9F7F2",
+  badgeText: {
+    color: "#047857",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: "#0F172A",
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    color: "#475569",
+    fontSize: 15,
     marginTop: 8,
-    fontStyle: "italic",
     textAlign: "center",
+    lineHeight: 22,
+    maxWidth: 280,
   },
-  formulaire: {
-    width: "100%",
+  card: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 28,
+    padding: 24,
+    shadowColor: "#0F172A",
+    shadowOpacity: 0.08,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 20,
   },
   input: {
     width: "100%",
-    backgroundColor: "#F9F7F2",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
     marginBottom: 16,
     fontSize: 16,
-    color: "#212121",
+    color: "#0F172A",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
   },
-  bouton: {
-    width: "100%",
-    backgroundColor: "#FBC02D",
-    borderRadius: 12,
-    padding: 16,
+  actionButton: {
+    backgroundColor: "#16A34A",
+    borderRadius: 16,
+    paddingVertical: 16,
     alignItems: "center",
     marginTop: 8,
-    elevation: 4,
   },
-  boutonTexte: {
-    color: "#1A237E",
-    fontWeight: "bold",
+  actionButtonDisabled: {
+    backgroundColor: "#86EFAC",
+  },
+  actionButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
     fontSize: 16,
-    letterSpacing: 1,
   },
-  boutonInscription: {
+  switchButton: {
     alignItems: "center",
-    marginTop: 24,
+    marginTop: 18,
+    paddingVertical: 6,
   },
-  boutonInscriptionTexte: {
-    color: "#F9F7F2",
+  switchButtonText: {
+    color: "#2563EB",
     fontSize: 14,
-  },
-  lienInscription: {
-    color: "#FBC02D",
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 });
