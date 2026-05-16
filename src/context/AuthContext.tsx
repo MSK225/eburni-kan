@@ -76,6 +76,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Écouter les changements d'état d'authentification Firebase (mode production uniquement)
   useEffect(() => {
     if (SKIP_AUTH) return; // Ne pas écouter Firebase en mode dev
+    if (!auth) {
+      console.warn("Firebase auth non initialisé");
+      setLoading(false);
+      return;
+    }
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
@@ -123,6 +128,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (!auth) throw new Error("Firebase non initialisé");
+
     try {
       await signInWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
@@ -144,6 +151,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (!auth) throw new Error("Firebase non initialisé");
+
     try {
       await createUserWithEmailAndPassword(auth, email, password);
     } catch (error: any) {
@@ -158,6 +167,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       return;
     }
+
+    if (!auth) throw new Error("Firebase non initialisé");
 
     try {
       await signOut(auth);
@@ -175,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    if (!auth) throw new Error("Firebase non initialisé");
     if (!user) {
       throw new Error("Aucun utilisateur connecté");
     }
@@ -183,8 +195,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Supprimer d'abord les données locales
       await AsyncStorage.removeItem(AUTH_STORAGE_KEY);
 
-      // Supprimer le compte Firebase (doit être fait en dernier)
-      await deleteUser(user);
+      // Supprimer le compte Firebase (utiliser auth.currentUser pour l'action réelle)
+      const current = auth.currentUser;
+      if (!current) {
+        throw new Error("Aucun utilisateur Firebase connecté");
+      }
+      await deleteUser(current);
     } catch (error: any) {
       console.warn("Erreur suppression compte:", error);
       throw new Error(getAuthErrorMessage(error.code));
