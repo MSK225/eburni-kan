@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, { FadeIn, FadeInUp, FadeOut, ZoomIn } from "react-native-reanimated";
 
 type ReadingWord = {
   text: string;
@@ -15,7 +16,10 @@ export function ReadingModule({ title, sentence }: ReadingModuleProps) {
   const [activeWord, setActiveWord] = useState<ReadingWord | null>(null);
 
   return (
-    <View style={styles.container}>
+    <Animated.View
+      style={styles.container}
+      entering={FadeIn.duration(400)}
+    >
       <Text style={styles.title}>{title}</Text>
       <View style={styles.card}>
         <Text style={styles.description}>
@@ -23,27 +27,45 @@ export function ReadingModule({ title, sentence }: ReadingModuleProps) {
         </Text>
         <View style={styles.sentenceRow}>
           {sentence.map((word, index) => (
-            <TouchableOpacity
+            <Animated.View
               key={`${word.text}-${index}`}
-              style={styles.wordButton}
-              onPress={() => setActiveWord(word)}
+              entering={FadeInUp.delay(index * 40).duration(300)}
             >
-              <Text style={styles.wordText}>{word.text}</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.wordButton,
+                  activeWord === word && styles.wordButtonActive,
+                ]}
+                onPress={() => setActiveWord(word)}
+              >
+                <Text
+                  style={[
+                    styles.wordText,
+                    activeWord === word && styles.wordTextActive,
+                  ]}
+                >
+                  {word.text}
+                </Text>
+              </TouchableOpacity>
+            </Animated.View>
           ))}
         </View>
         {activeWord ? (
-          <View style={styles.translationBox}>
+          <Animated.View
+            style={styles.translationBox}
+            entering={ZoomIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+          >
             <Text style={styles.translationLabel}>Traduction</Text>
             <Text style={styles.translationText}>{activeWord.translation}</Text>
-          </View>
+          </Animated.View>
         ) : (
           <Text style={styles.translationHint}>
             Choisis un mot pour voir sa signification.
           </Text>
         )}
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -90,9 +112,16 @@ const styles = StyleSheet.create({
     borderColor: "#C5CAE9",
     marginBottom: 8,
   },
+  wordButtonActive: {
+    backgroundColor: "#1A237E",
+    borderColor: "#1A237E",
+  },
   wordText: {
     fontSize: 16,
     color: "#1A237E",
+  },
+  wordTextActive: {
+    color: "#fff",
   },
   translationBox: {
     marginTop: 4,

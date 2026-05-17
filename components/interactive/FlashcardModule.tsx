@@ -1,5 +1,15 @@
-import React, { useState } from "react";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, {
+  FadeIn,
+  interpolate,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 
 type Flashcard = {
   front: string;
@@ -16,7 +26,36 @@ type FlashcardModuleProps = {
 export function FlashcardModule({ title, cards }: FlashcardModuleProps) {
   const [index, setIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
+  const flipAnim = useSharedValue(0);
+  const translateX = useSharedValue(0);
   const card = cards[index];
+
+  useEffect(() => {
+    flipAnim.value = withSpring(showBack ? 1 : 0, {
+      damping: 12,
+      mass: 1,
+      overshootClamping: false,
+    });
+  }, [showBack, flipAnim]);
+
+  // Flip animation
+  const animatedStyle = useAnimatedStyle(() => {
+    const rotation = interpolate(flipAnim.value, [0, 1], [0, 180]);
+    return {
+      transform: [
+        { rotateY: `${rotation}deg` },
+        { translateX: translateX.value },
+      ],
+    };
+  });
+
+  // Swipe indicators opacity
+  const leftIndicatorStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translateX.value, [-80, 0], [1, 0], "clamp"),
+  }));
+  const rightIndicatorStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(translateX.value, [0, 80], [0, 1], "clamp"),
+  }));
 
   const goNext = () => {
     setIndex((prev) => (prev + 1) % cards.length);
@@ -28,27 +67,68 @@ export function FlashcardModule({ title, cards }: FlashcardModuleProps) {
     setShowBack(false);
   };
 
+  // Pan gesture pour swipe gauche/droite
+  const panGesture = Gesture.Pan()
+    .onUpdate((e) => {
+      translateX.value = e.translationX * 0.4;
+    })
+    .onEnd((e) => {
+      if (e.translationX < -60) {
+        // Swipe gauche → carte suivante
+        translateX.value = withTiming(-300, { duration: 200 }, () => {
+          runOnJS(goNext)();
+          translateX.value = 300;
+          translateX.value = withSpring(0, { damping: 14 });
+        });
+      } else if (e.translationX > 60) {
+        // Swipe droite → carte précédente
+        translateX.value = withTiming(300, { duration: 200 }, () => {
+          runOnJS(goPrevious)();
+          translateX.value = -300;
+          translateX.value = withSpring(0, { damping: 14 });
+        });
+      } else {
+        translateX.value = withSpring(0, { damping: 14 });
+      }
+    });
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      <View style={styles.card}>
-        <Text
-          style={styles.counter}
-        >{`Carte ${index + 1} / ${cards.length}`}</Text>
-        <Text style={styles.front}>{card.front}</Text>
-        {showBack ? (
-          <View style={styles.backContainer}>
-            <Text style={styles.backLabel}>Traduction</Text>
-            <Text style={styles.back}>{card.back}</Text>
-            {card.note ? <Text style={styles.note}>{card.note}</Text> : null}
-            {card.example ? (
-              <Text style={styles.example}>{card.example}</Text>
-            ) : null}
-          </View>
-        ) : (
-          <Text style={styles.hint}>Appuie sur « Voir la réponse »</Text>
-        )}
+
+      {/* Indicateurs de swipe */}
+      <View style={styles.swipeHints}>
+        <Animated.Text style={[styles.swipeHintLeft, leftIndicatorStyle]}>
+          ← Précédent
+        </Animated.Text>
+        <Animated.Text style={[styles.swipeHintRight, rightIndicatorStyle]}>
+          Suivant →
+        </Animated.Text>
       </View>
+
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={[styles.card, animatedStyle]}>
+          <Text style={styles.counter}>{`Carte ${index + 1} / ${cards.length}`}</Text>
+          {!showBack ? (
+            <Animated.View entering={FadeIn.duration(300)}>
+              <Text style={styles.front}>{card.front}</Text>
+              <Text style={styles.hint}>👆 Appuie pour voir · Glisse pour naviguer</Text>
+            </Animated.View>
+          ) : (
+            <Animated.View entering={FadeIn.duration(300)}>
+              <View style={styles.backContainer}>
+                <Text style={styles.backLabel}>Traduction</Text>
+                <Text style={styles.back}>{card.back}</Text>
+                {card.note ? <Text style={styles.note}>{card.note}</Text> : null}
+                {card.example ? (
+                  <Text style={styles.example}>{card.example}</Text>
+                ) : null}
+              </View>
+            </Animated.View>
+          )}
+        </Animated.View>
+      </GestureDetector>
+
       <View style={styles.buttonsRow}>
         <TouchableOpacity style={styles.controlButton} onPress={goPrevious}>
           <Text style={styles.controlButtonText}>← Précédent</Text>
@@ -84,7 +164,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#1A237E",
-    marginBottom: 12,
+    marginBottom: 4,
+  },
+  swipeHints: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  swipeHintLeft: {
+    fontSize: 12,
+    color: "#3F51B5",
+    fontWeight: "600",
+  },
+  swipeHintRight: {
+    fontSize: 12,
+    color: "#3F51B5",
+    fontWeight: "600",
   },
   card: {
     backgroundColor: "#F5F5F5",
@@ -133,8 +229,9 @@ const styles = StyleSheet.create({
     color: "#424242",
   },
   hint: {
-    fontSize: 14,
-    color: "#616161",
+    fontSize: 13,
+    color: "#9E9E9E",
+    fontStyle: "italic",
   },
   buttonsRow: {
     marginTop: 16,

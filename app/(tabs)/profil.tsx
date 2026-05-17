@@ -1,13 +1,18 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import React from "react";
+import { Alert, ScrollView, StyleSheet, View, Image } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
+import { EburniLogo } from "@/components/brand";
+import { BodyText, NavText, PrimaryButton } from "@/components/design-system";
+import { EburniSection } from "@/components/layout";
+import { LevelSymbol, PagneBackground } from "@/components/immersion";
+import { PROFILE_HERITAGE } from "@/constants/media-assets";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+  EburniKanColors,
+  EburniKanRadii,
+  EburniKanSpacing,
+} from "@/constants/theme";
 import { useAuth } from "../../src/context/AuthContext";
 import { useProgress } from "../../src/context/ProgressContext";
 import { getEarnedBadges, getNextBadge } from "../../src/data/badges";
@@ -31,7 +36,7 @@ export default function ProfilScreen() {
         onPress: async () => {
           try {
             await logout();
-          } catch (error) {
+          } catch {
             Alert.alert("Erreur", "Impossible de se déconnecter");
           }
         },
@@ -42,7 +47,7 @@ export default function ProfilScreen() {
   const handleDeleteAccount = () => {
     Alert.alert(
       "Supprimer le compte",
-      "⚠️ ATTENTION : Cette action est IRRÉVERSIBLE !\n\nTous vos progrès, badges et données seront supprimés définitivement.\n\nÊtes-vous absolument sûr ?",
+      "Cette action est irréversible. Tous vos progrès seront supprimés.",
       [
         { text: "Annuler", style: "cancel" },
         {
@@ -51,15 +56,11 @@ export default function ProfilScreen() {
           onPress: async () => {
             try {
               await deleteAccount();
-              Alert.alert(
-                "Compte supprimé",
-                "Votre compte a été supprimé avec succès.",
-              );
-            } catch (error: any) {
-              Alert.alert(
-                "Erreur",
-                error.message || "Impossible de supprimer le compte",
-              );
+              Alert.alert("Compte supprimé", "Votre compte a été supprimé.");
+            } catch (error: unknown) {
+              const message =
+                error instanceof Error ? error.message : "Impossible de supprimer le compte";
+              Alert.alert("Erreur", message);
             }
           },
         },
@@ -68,228 +69,201 @@ export default function ProfilScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <IconSymbol name="person.crop.circle.fill" size={48} color="#FBC02D" />
-        <Text style={styles.title}>Profil</Text>
-      </View>
+    <PagneBackground>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <EburniLogo size="md" />
+          <NavText style={styles.headerTitle}>Profil</NavText>
+          {user?.email ? (
+            <BodyText size="sm" style={styles.email}>
+              {user.email}
+            </BodyText>
+          ) : null}
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Statut d'apprentissage</Text>
-        <View style={styles.row}>
-          <Text style={styles.metricLabel}>Leçons terminées</Text>
-          <Text style={styles.metricValue}>
-            {progress.completedLessons.length}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.metricLabel}>Questions répondues</Text>
-          <Text style={styles.metricValue}>{progress.quizTotal}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.metricLabel}>Modules interactifs complétés</Text>
-          <Text style={styles.metricValue}>
-            {progress.completedModules.length}
-          </Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.metricLabel}>Précision quiz</Text>
-          <Text style={styles.metricValue}>{accuracy}%</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.metricLabel}>Niveau actuel</Text>
-          <Text style={styles.metricValue}>{difficulty}</Text>
-        </View>
-      </View>
+        <EburniSection title="Ton parcours">
+          <LevelSymbol difficulty={difficulty} />
+          <View style={styles.row}>
+            <BodyText>Leçons terminées</BodyText>
+            <NavText variant="primary">{progress.completedLessons.length}</NavText>
+          </View>
+          <View style={styles.row}>
+            <BodyText>Questions répondues</BodyText>
+            <NavText variant="primary">{progress.quizTotal}</NavText>
+          </View>
+          <View style={styles.row}>
+            <BodyText>Modules complétés</BodyText>
+            <NavText variant="primary">{progress.completedModules.length}</NavText>
+          </View>
+          <View style={styles.row}>
+            <BodyText>Précision quiz</BodyText>
+            <NavText variant="primary">{accuracy}%</NavText>
+          </View>
+          <View style={styles.row}>
+            <BodyText>Niveau actuel</BodyText>
+            <NavText variant="primary">{difficulty}</NavText>
+          </View>
+        </EburniSection>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>
-          Badges obtenus ({earnedBadges.length})
-        </Text>
-        {earnedBadges.length > 0 ? (
-          <View style={styles.badgesContainer}>
-            {earnedBadges.map((badge) => (
-              <View
-                key={badge.id}
-                style={[styles.badgeCard, { borderColor: badge.color }]}
-              >
-                <IconSymbol name={badge.icon} size={24} color={badge.color} />
-                <Text style={[styles.badgeName, { color: badge.color }]}>
-                  {badge.name}
-                </Text>
-                <Text style={styles.badgeDescription}>{badge.description}</Text>
+        <EburniSection title={`Badges obtenus (${earnedBadges.length})`}>
+          {earnedBadges.length > 0 ? (
+            <Animated.View
+              style={styles.badgesWrap}
+              entering={FadeInDown.duration(500)}
+            >
+              {earnedBadges.map((badge, idx) => (
+                <Animated.View
+                  key={badge.id}
+                  entering={FadeInDown.delay(idx * 80).duration(400)}
+                >
+                  <View
+                    style={[styles.badgeCard, { borderColor: badge.color }]}
+                  >
+                    <IconSymbol name={badge.icon} size={24} color={badge.color} />
+                    <NavText size="small" style={{ color: badge.color }}>
+                      {badge.name}
+                    </NavText>
+                    <BodyText size="sm" muted style={styles.badgeDesc}>
+                      {badge.description}
+                    </BodyText>
+                  </View>
+                </Animated.View>
+              ))}
+            </Animated.View>
+          ) : (
+            <BodyText size="sm" muted>
+              Aucun badge pour le moment. Continue à apprendre !
+            </BodyText>
+          )}
+        </EburniSection>
+
+        {nextBadge ? (
+          <Animated.View entering={FadeInDown.delay(200).duration(400)}>
+            <EburniSection title="Prochain badge">
+              <View style={[styles.badgeCard, { borderColor: nextBadge.color, opacity: 0.85 }]}>
+                <IconSymbol name={nextBadge.icon} size={24} color={nextBadge.color} />
+                <NavText size="small" style={{ color: nextBadge.color }}>
+                  {nextBadge.name}
+                </NavText>
+                <BodyText size="sm" muted>
+                  {nextBadge.description}
+                </BodyText>
+              </View>
+            </EburniSection>
+          </Animated.View>
+        ) : null}
+
+        <EburniSection title="🎭 Patrimoine de Tradition">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.heritageScroll}>
+            {PROFILE_HERITAGE.map((image, index) => (
+              <View key={index} style={styles.heritageCard}>
+                <Image
+                  source={image}
+                  style={styles.heritageImage}
+                />
               </View>
             ))}
-          </View>
-        ) : (
-          <Text style={styles.noBadgesText}>
-            Aucun badge obtenu pour le moment. Continuez à apprendre !
-          </Text>
-        )}
-      </View>
+          </ScrollView>
+          <BodyText size="sm" style={styles.heritageDesc}>
+            Découvrez l&apos;héritage culturel du nord de la Côte d&apos;Ivoire à travers des images et des histoires.
+          </BodyText>
+        </EburniSection>
 
-      {nextBadge && (
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Prochain badge</Text>
-          <View
-            style={[
-              styles.badgeCard,
-              { borderColor: nextBadge.color, opacity: 0.7 },
-            ]}
-          >
-            <IconSymbol
-              name={nextBadge.icon}
-              size={24}
-              color={nextBadge.color}
-            />
-            <Text style={[styles.badgeName, { color: nextBadge.color }]}>
-              {nextBadge.name}
-            </Text>
-            <Text style={styles.badgeDescription}>{nextBadge.description}</Text>
-          </View>
-        </View>
-      )}
+        <EburniSection title="Conseils">
+          <BodyText>
+            Continue une leçon à la fois, fais les quiz, et revisite les expressions
+            les plus utiles chaque jour.
+          </BodyText>
+        </EburniSection>
 
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <IconSymbol name="arrow.right.square" size={20} color="#fff" />
-        <Text style={styles.logoutText}>Se déconnecter</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={handleDeleteAccount}
-      >
-        <IconSymbol name="trash.fill" size={20} color="#fff" />
-        <Text style={styles.deleteText}>Supprimer mon compte</Text>
-      </TouchableOpacity>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Conseils</Text>
-        <Text style={styles.text}>
-          Continue à apprendre une leçon à la fois, fais les quiz, et relis
-          régulièrement les expressions les plus utiles.
-        </Text>
-      </View>
-    </ScrollView>
+        <PrimaryButton
+          label="Se déconnecter"
+          variant="primary"
+          onPress={handleLogout}
+          style={styles.actionBtn}
+        />
+        <PrimaryButton
+          label="Supprimer mon compte"
+          variant="outline"
+          onPress={handleDeleteAccount}
+          style={styles.deleteBtn}
+        />
+      </ScrollView>
+    </PagneBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9F7F2",
-  },
-  content: {
-    paddingBottom: 32,
-  },
+  scroll: { flex: 1 },
+  content: { paddingBottom: EburniKanSpacing.xl },
   header: {
-    backgroundColor: "#1A237E",
-    padding: 24,
+    backgroundColor: EburniKanColors.primary,
     paddingTop: 50,
+    padding: EburniKanSpacing.lg,
     alignItems: "center",
   },
-  title: {
-    color: "#FBC02D",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginTop: 12,
-    textAlign: "center",
+  headerTitle: {
+    color: EburniKanColors.accent,
+    marginTop: EburniKanSpacing.sm,
   },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    margin: 16,
-    elevation: 2,
-  },
-  cardTitle: {
-    color: "#1A237E",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
+  email: {
+    color: EburniKanColors.onPrimary,
+    marginTop: EburniKanSpacing.xs,
+    opacity: 0.9,
   },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    alignItems: "center",
+    marginBottom: EburniKanSpacing.sm,
   },
-  metricLabel: {
-    color: "#555",
-    fontSize: 14,
-  },
-  metricValue: {
-    color: "#1A237E",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  text: {
-    color: "#555",
-    fontSize: 14,
-    lineHeight: 22,
-  },
-  badgesContainer: {
+  badgesWrap: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    gap: EburniKanSpacing.sm,
   },
   badgeCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 12,
+    backgroundColor: EburniKanColors.background,
+    borderRadius: EburniKanRadii.md,
+    padding: EburniKanSpacing.sm,
     alignItems: "center",
     minWidth: 100,
     borderWidth: 2,
-    elevation: 2,
+    flex: 1,
+    maxWidth: "48%",
   },
-  badgeName: {
-    fontSize: 12,
-    fontWeight: "bold",
-    marginTop: 4,
+  badgeDesc: {
     textAlign: "center",
+    marginTop: EburniKanSpacing.xs,
   },
-  badgeDescription: {
-    fontSize: 10,
-    color: "#666",
-    textAlign: "center",
-    marginTop: 2,
-    lineHeight: 14,
+  actionBtn: {
+    marginHorizontal: EburniKanSpacing.md,
+    marginTop: EburniKanSpacing.sm,
   },
-  noBadgesText: {
-    color: "#888",
-    fontSize: 14,
-    textAlign: "center",
+  deleteBtn: {
+    marginHorizontal: EburniKanSpacing.md,
+    marginTop: EburniKanSpacing.sm,
+    marginBottom: EburniKanSpacing.lg,
+    borderColor: EburniKanColors.error,
+  },
+  heritageScroll: {
+    marginBottom: EburniKanSpacing.sm,
+  },
+  heritageCard: {
+    marginRight: EburniKanSpacing.md,
+    borderRadius: EburniKanRadii.md,
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: EburniKanColors.accent,
+  },
+  heritageImage: {
+    width: 140,
+    height: 140,
+    backgroundColor: EburniKanColors.secondary,
+  },
+  heritageDesc: {
+    color: EburniKanColors.primary,
+    marginTop: EburniKanSpacing.sm,
     fontStyle: "italic",
-  },
-  logoutButton: {
-    backgroundColor: "#dc3545",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginVertical: 16,
-    gap: 8,
-  },
-  logoutText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  deleteButton: {
-    backgroundColor: "#8B0000",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    borderRadius: 12,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    gap: 8,
-  },
-  deleteText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });

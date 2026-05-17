@@ -1,3 +1,5 @@
+import { TALE_THUMBNAILS, TALE_VIDEOS } from "../../constants/media-assets";
+
 export const proverbs = [
   {
     malinke: "Mogoya ka ca siya la",
@@ -32,11 +34,6 @@ export const proverbs = [
     francais: "L'amitié est plus grande que la richesse",
     explication: "Les vrais amis sont plus précieux que l'argent.",
   },
-  {
-    malinke: "Kuma ka ca kɛlɛ la",
-    francais: "La parole est plus forte que la guerre",
-    explication: "Le dialogue résout plus de problèmes que la confrontation.",
-  },
 ];
 
 export const expressions = [
@@ -65,30 +62,48 @@ export const expressions = [
 export const tales = [
   {
     id: 1,
-    title: "Le lièvre et la tortue",
-    description: "Une histoire sur la persévérance et l'humilité.",
-    videoSource: "https://www.youtube.com/watch?v=wfWZmJoJUGA",
-    videoUrl: "https://example.com/tale1.mp4", // URL pour production
+    title: "Conte traditionnel I",
+    description: "Sagesse et transmission — Nord de la Côte d'Ivoire.",
+    videoSource: TALE_VIDEOS[0],
+    videoUrl: null,
     duration: "5 min",
-    thumbnail: null, // Pas de miniature pour le test
+    thumbnail: TALE_THUMBNAILS[0],
   },
   {
     id: 2,
-    title: "Le singe et le crocodile",
-    description: "Une leçon sur la confiance et la trahison.",
-    videoSource: "https://www.youtube.com/watch?v=RGWRWIm0mp8",
-    videoUrl: "https://example.com/tale2.mp4", // URL pour production
+    title: "Conte traditionnel II",
+    description: "Valeurs communautaires et respect des anciens.",
+    videoSource: TALE_VIDEOS[1],
+    videoUrl: null,
     duration: "7 min",
-    thumbnail: null, // Pas de miniature pour le test
+    thumbnail: TALE_THUMBNAILS[1],
   },
   {
     id: 3,
-    title: "Le chasseur et le génie",
-    description: "Une histoire sur l'intelligence et la sagesse.",
-    videoSource: "https://www.youtube.com/watch?v=wsk2Byd4qvA",
-    videoUrl: "https://example.com/tale3.mp4", // URL pour production
+    title: "Conte traditionnel III",
+    description: "Intelligence, patience et vivre ensemble.",
+    videoSource: TALE_VIDEOS[2],
+    videoUrl: null,
     duration: "6 min",
-    thumbnail: null, // Pas de miniature pour le test
+    thumbnail: TALE_THUMBNAILS[2],
+  },
+  {
+    id: 4,
+    title: "Conte traditionnel IV",
+    description: "Patrimoine oral mandingue.",
+    videoSource: TALE_VIDEOS[3],
+    videoUrl: null,
+    duration: "8 min",
+    thumbnail: TALE_THUMBNAILS[3],
+  },
+  {
+    id: 5,
+    title: "Conte traditionnel V",
+    description: "Fierté identitaire et cohésion sociale.",
+    videoSource: TALE_VIDEOS[4],
+    videoUrl: null,
+    duration: "6 min",
+    thumbnail: TALE_THUMBNAILS[4],
   },
 ];
 
@@ -106,6 +121,6 @@ export function getDailyExpression() {
   const dayOfYear = Math.floor(
     (today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24),
   );
-  const index = (dayOfYear + 3) % expressions.length; // Offset to get different content
+  const index = (dayOfYear + 3) % expressions.length;
   return expressions[index];
 }

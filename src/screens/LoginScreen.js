@@ -58,7 +58,7 @@ export default function LoginScreen() {
         <TouchableOpacity style={styles.boutonInscription}>
           <Text style={styles.boutonInscriptionTexte}>
             Pas encore de compte ?{" "}
-            <Text style={styles.lienInscription}>S'inscrire</Text>
+            <Text style={styles.lienInscription}>S&apos;inscrire</Text>
           </Text>
         </TouchableOpacity>
       </View>

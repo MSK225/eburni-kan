@@ -364,7 +364,7 @@ function SpeedrunGame({ lecons, difficulty, onBack }: any) {
     if (timeLeft <= 0 || currentIdx >= questions.length) return;
     const timer = setInterval(() => setTimeLeft(timeLeft - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft, currentIdx]);
+  }, [timeLeft, currentIdx, questions.length]);
 
   const handleAnswer = (answer: string) => {
     if (answer === questions[currentIdx].answer) {

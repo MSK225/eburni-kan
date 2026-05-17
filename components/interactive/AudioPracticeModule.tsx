@@ -1,6 +1,7 @@
 import { Audio } from "expo-av";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Animated, { FadeIn, SlideInDown } from "react-native-reanimated";
 
 type AudioPhrase = {
   text: string;
@@ -51,7 +52,10 @@ export function AudioPracticeModule({
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View
+      style={styles.container}
+      entering={FadeIn.duration(400)}
+    >
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.description}>
         Écoute chaque expression, puis vérifie sa traduction.
@@ -60,7 +64,11 @@ export function AudioPracticeModule({
       {phrases.map((phrase, index) => {
         const isPlaying = index === playingIndex;
         return (
-          <View key={phrase.text} style={styles.phraseCard}>
+          <Animated.View
+            key={phrase.text}
+            style={styles.phraseCard}
+            entering={SlideInDown.delay(index * 60).duration(300)}
+          >
             <View>
               <Text style={styles.phraseText}>{phrase.text}</Text>
               <Text style={styles.phraseTranslation}>{phrase.translation}</Text>
@@ -74,10 +82,10 @@ export function AudioPracticeModule({
                 {loading && isPlaying ? "Lecture..." : "🔊 Écouter"}
               </Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         );
       })}
-    </View>
+    </Animated.View>
   );
 }
 

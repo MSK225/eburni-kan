@@ -1,23 +1,19 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
+
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+  BodyText,
+  MalinkeText,
+  PrimaryButton,
+} from "@/components/design-system";
+import { EburniSection, ScreenHeader } from "@/components/layout";
+import { VideoPlayer } from "@/components/ui/video-player";
+import { LayoutStyles } from "@/constants/layout-styles";
+import { LESSON_INTRO_VIDEOS } from "@/constants/media-assets";
+import { EburniKanColors, EburniKanSpacing } from "@/constants/theme";
 import { useProgress } from "../src/context/ProgressContext";
 import { lecons } from "../src/data/lecons";
-
-interface ContentItem {
-  malinke: string;
-  francais: string;
-  prononciation: string;
-  note?: string;
-  exemple?: string;
-  reponse?: string;
-}
 
 export default function LeconScreen() {
   const router = useRouter();
@@ -28,14 +24,11 @@ export default function LeconScreen() {
 
   useEffect(() => {
     if (!lecon) return;
-    const sendViewEvent = async () => {
-      await recordEvent({
-        type: "lesson_view",
-        lessonId: lecon.id,
-        timestamp: Date.now(),
-      });
-    };
-    sendViewEvent();
+    recordEvent({
+      type: "lesson_view",
+      lessonId: lecon.id,
+      timestamp: Date.now(),
+    });
   }, [lecon, recordEvent]);
 
   const startQuiz = async () => {
@@ -50,252 +43,176 @@ export default function LeconScreen() {
 
   if (!lecon) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.erreur}>Leçon non trouvée</Text>
-        <TouchableOpacity style={styles.boutton} onPress={() => router.back()}>
-          <Text style={styles.bouttonTexte}>Retour</Text>
-        </TouchableOpacity>
+      <View style={[LayoutStyles.screen, styles.centered]}>
+        <BodyText style={styles.error}>Leçon non trouvée</BodyText>
+        <PrimaryButton
+          label="Retour"
+          variant="primary"
+          onPress={() => router.back()}
+          style={styles.errorBtn}
+        />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.retour} onPress={() => router.back()}>
-          <Text style={styles.retourTexte}>‹ Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.titre}>{lecon.titre}</Text>
-        <Text style={styles.niveau}>{lecon.niveau}</Text>
-      </View>
+    <ScrollView style={LayoutStyles.screen}>
+      <ScreenHeader
+        title={lecon.titre}
+        subtitle={lecon.niveau}
+        showBack
+        onBack={() => router.back()}
+      />
 
-      <View style={styles.contenu}>
-        {lecon.description && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitre}>📝 À propos</Text>
-            <Text style={styles.texte}>{lecon.description}</Text>
+      <View style={LayoutStyles.content}>
+        {/* Vidéo intro — rotation par leçon */}
+        {lecon.id <= 5 && (
+          <View style={styles.videoContainer}>
+            <VideoPlayer
+              source={LESSON_INTRO_VIDEOS[lecon.id - 1]}
+              title="Vidéo d'introduction"
+            />
+            <BodyText size="sm" style={styles.videoCaption}>
+              Introduction vidéo à cette leçon
+            </BodyText>
           </View>
         )}
 
-        {lecon.objectifs && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitre}>🎯 Objectifs</Text>
+        {lecon.description ? (
+          <EburniSection title="📝 À propos">
+            <BodyText>{lecon.description}</BodyText>
+          </EburniSection>
+        ) : null}
+
+        {lecon.objectifs ? (
+          <EburniSection title="🎯 Objectifs">
             {lecon.objectifs.map((obj, index) => (
-              <View key={index} style={styles.objectifItem}>
-                <Text style={styles.objectifBullet}>•</Text>
-                <Text style={styles.objectifTexte}>{obj}</Text>
+              <View key={index} style={styles.objectifRow}>
+                <Text style={styles.bullet}>•</Text>
+                <BodyText style={styles.objectifText}>{obj}</BodyText>
               </View>
             ))}
-          </View>
-        )}
+          </EburniSection>
+        ) : null}
 
-        {lecon.introduction && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitre}>💡 Introduction</Text>
-            <Text style={styles.texte}>{lecon.introduction}</Text>
-          </View>
-        )}
+        {lecon.introduction ? (
+          <EburniSection title="💡 Introduction">
+            <BodyText>{lecon.introduction}</BodyText>
+          </EburniSection>
+        ) : null}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitre}>📚 Vocabulaire</Text>
-          {lecon.contenu.map((item: any, index) => (
-            <View key={index} style={styles.motCard}>
-              <Text style={styles.malinke}>{item.malinke}</Text>
-              <Text style={styles.prononciation}>{item.prononciation}</Text>
-              <Text style={styles.francais}>{item.francais}</Text>
-              {item.note && <Text style={styles.note}>💬 {item.note}</Text>}
-              {item.exemple && (
-                <Text style={styles.exemple}>Exemple: {item.exemple}</Text>
-              )}
-              {item.reponse && (
-                <Text style={styles.reponse}>Réponse: {item.reponse}</Text>
-              )}
+        <EburniSection title="📚 Vocabulaire">
+          {lecon.contenu.map((item, index) => (
+            <View key={index} style={LayoutStyles.vocabCard}>
+              <MalinkeText>{item.malinke}</MalinkeText>
+              <BodyText size="sm" style={styles.prononciation}>
+                {item.prononciation}
+              </BodyText>
+              <BodyText>{item.francais}</BodyText>
+              {"note" in item && item.note ? (
+                <BodyText size="sm" style={styles.note}>
+                  💬 {item.note}
+                </BodyText>
+              ) : null}
+              {item.exemple ? (
+                <BodyText size="sm" style={styles.exemple}>
+                  Exemple : {item.exemple}
+                </BodyText>
+              ) : null}
+              {"reponse" in item && item.reponse ? (
+                <BodyText size="sm" style={styles.reponse}>
+                  Réponse : {item.reponse}
+                </BodyText>
+              ) : null}
             </View>
           ))}
-        </View>
+        </EburniSection>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitre}>⏱ Durée estimée</Text>
-          <Text style={styles.info}>{lecon.duree}</Text>
-        </View>
+        <EburniSection title="⏱ Durée estimée">
+          <BodyText>{lecon.duree}</BodyText>
+        </EburniSection>
 
-        {lecon.conseils && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitre}>💪 Conseils d'apprentissage</Text>
-            <Text style={styles.texte}>{lecon.conseils}</Text>
-          </View>
-        )}
+        {lecon.conseils ? (
+          <EburniSection title="💪 Conseils d'apprentissage">
+            <BodyText>{lecon.conseils}</BodyText>
+          </EburniSection>
+        ) : null}
 
-        <TouchableOpacity style={styles.boutonJeu} onPress={startQuiz}>
-          <Text style={styles.boutonJeuTexte}>Démarrer le jeu</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.boutonCommencer}
+        <PrimaryButton label="Démarrer le quiz" onPress={startQuiz} />
+        <PrimaryButton
+          label="Quitter"
+          variant="outline"
           onPress={() => router.back()}
-        >
-          <Text style={styles.boutonTexte}>Quitter</Text>
-        </TouchableOpacity>
+          style={styles.quitBtn}
+        />
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F9F7F2",
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: EburniKanSpacing.lg,
   },
-  header: {
-    backgroundColor: "#1A237E",
-    padding: 20,
-    paddingTop: 50,
+  error: {
+    color: EburniKanColors.error,
+    textAlign: "center",
   },
-  retour: {
-    marginBottom: 16,
+  errorBtn: {
+    marginTop: EburniKanSpacing.md,
   },
-  retourTexte: {
-    color: "#FBC02D",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  titre: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#FBC02D",
-  },
-  niveau: {
-    fontSize: 14,
-    color: "#F9F7F2",
-    marginTop: 8,
-  },
-  contenu: {
-    padding: 16,
-  },
-  section: {
-    backgroundColor: "#fff",
+  videoContainer: {
+    marginBottom: EburniKanSpacing.lg,
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: "#FBC02D",
+    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: EburniKanColors.accent,
   },
-  sectionTitre: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1A237E",
-    marginBottom: 12,
+  introVideo: {
+    width: "100%",
+    height: 200,
   },
-  texte: {
-    fontSize: 14,
-    color: "#555",
-    lineHeight: 22,
+  videoCaption: {
+    padding: EburniKanSpacing.sm,
+    backgroundColor: EburniKanColors.primary,
+    color: EburniKanColors.onPrimary,
+    textAlign: "center",
   },
-  objectifItem: {
+  objectifRow: {
     flexDirection: "row",
-    marginBottom: 8,
+    marginBottom: EburniKanSpacing.sm,
     alignItems: "flex-start",
   },
-  objectifBullet: {
-    color: "#FBC02D",
+  bullet: {
+    color: EburniKanColors.accent,
     fontSize: 18,
-    fontWeight: "bold",
-    marginRight: 8,
+    marginRight: EburniKanSpacing.sm,
   },
-  objectifTexte: {
-    fontSize: 14,
-    color: "#555",
+  objectifText: {
     flex: 1,
-    lineHeight: 20,
-  },
-  motCard: {
-    backgroundColor: "#F9F7F2",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    borderLeftWidth: 3,
-    borderLeftColor: "#1A237E",
-  },
-  malinke: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1A237E",
-    marginBottom: 4,
   },
   prononciation: {
-    fontSize: 14,
-    color: "#FBC02D",
+    color: EburniKanColors.accent,
     fontStyle: "italic",
-    marginBottom: 4,
-  },
-  francais: {
-    fontSize: 14,
-    color: "#555",
-    marginBottom: 4,
-    fontWeight: "500",
+    marginVertical: EburniKanSpacing.xs,
   },
   note: {
-    fontSize: 12,
-    color: "#d88e0b",
-    marginTop: 6,
+    color: "#D88E0B",
+    marginTop: EburniKanSpacing.xs,
     fontStyle: "italic",
   },
   exemple: {
-    fontSize: 12,
-    color: "#1976d2",
-    marginTop: 4,
+    color: EburniKanColors.primary,
+    marginTop: EburniKanSpacing.xs,
   },
   reponse: {
-    fontSize: 12,
-    color: "#388e3c",
-    marginTop: 4,
-    fontWeight: "500",
+    color: EburniKanColors.success,
+    marginTop: EburniKanSpacing.xs,
   },
-  info: {
-    fontSize: 16,
-    color: "#555",
-  },
-  boutonCommencer: {
-    backgroundColor: "#FBC02D",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
-    marginTop: 16,
-    marginBottom: 32,
-  },
-  boutonTexte: {
-    color: "#1A237E",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  boutonJeu: {
-    backgroundColor: "#1A237E",
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  boutonJeuTexte: {
-    color: "#F9F7F2",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  erreur: {
-    fontSize: 16,
-    color: "#d32f2f",
-    textAlign: "center",
-    marginTop: 32,
-  },
-  boutton: {
-    backgroundColor: "#1A237E",
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 16,
-    alignSelf: "center",
-  },
-  bouttonTexte: {
-    color: "#FBC02D",
-    fontSize: 16,
-    fontWeight: "600",
+  quitBtn: {
+    marginTop: EburniKanSpacing.sm,
+    marginBottom: EburniKanSpacing.xl,
   },
 });

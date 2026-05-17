@@ -1,14 +1,29 @@
-import { View, type ViewProps } from 'react-native';
+import { StyleSheet, View, type ViewProps } from 'react-native';
 
-import { useThemeColor } from '@/hooks/use-theme-color';
+import { EburniKanColors } from '@/constants/theme';
 
 export type ThemedViewProps = ViewProps & {
-  lightColor?: string;
-  darkColor?: string;
+  variant?: 'default' | 'primary';
 };
 
-export function ThemedView({ style, lightColor, darkColor, ...otherProps }: ThemedViewProps) {
-  const backgroundColor = useThemeColor({ light: lightColor, dark: darkColor }, 'background');
-
-  return <View style={[{ backgroundColor }, style]} {...otherProps} />;
+export function ThemedView({
+  style,
+  variant = 'default',
+  ...otherProps
+}: ThemedViewProps) {
+  return (
+    <View
+      style={[variant === 'primary' ? styles.primary : styles.default, style]}
+      {...otherProps}
+    />
+  );
 }
+
+const styles = StyleSheet.create({
+  default: {
+    backgroundColor: EburniKanColors.background,
+  },
+  primary: {
+    backgroundColor: EburniKanColors.primary,
+  },
+});

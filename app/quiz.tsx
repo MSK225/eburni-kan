@@ -1,13 +1,22 @@
 ﻿import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import {
+  BodyText,
+  NavText,
+  PrimaryButton,
+} from "@/components/design-system";
+import { ScreenHeader } from "@/components/layout";
+import { LayoutStyles } from "@/constants/layout-styles";
+import { EburniKanColors, EburniKanRadii, EburniKanSpacing } from "@/constants/theme";
 import { useProgress } from "../src/context/ProgressContext";
 import { lecons } from "../src/data/lecons";
 
@@ -24,20 +33,29 @@ export default function QuizScreen() {
   const [showModal, setShowModal] = useState(false);
   const [reussi, setReussi] = useState(false);
 
-  const questions = (lecon as any)?.jeu || (lecon as any)?.quiz || [];
+  const questions = (lecon as { jeu?: unknown[]; quiz?: unknown[] })?.jeu
+    ?? (lecon as { quiz?: unknown[] })?.quiz
+    ?? [];
 
   if (!lecon || questions.length === 0) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.erreur}>Quiz non disponible pour cette leçon.</Text>
-        <TouchableOpacity style={styles.bouton} onPress={() => router.back()}>
-          <Text style={styles.boutonTexte}>Retour</Text>
-        </TouchableOpacity>
+      <View style={[LayoutStyles.screen, styles.centered]}>
+        <BodyText style={styles.error}>Quiz non disponible pour cette leçon.</BodyText>
+        <PrimaryButton
+          label="Retour"
+          variant="primary"
+          onPress={() => router.back()}
+          style={styles.errorBtn}
+        />
       </View>
     );
   }
 
-  const question = questions[currentIndex];
+  const question = questions[currentIndex] as {
+    question: string;
+    answer: string;
+    options: string[];
+  };
 
   const handleOption = async (option: string) => {
     if (answered) return;
@@ -46,12 +64,12 @@ export default function QuizScreen() {
 
     const correct = option === question.answer;
     if (correct) {
-      setScore(score + 1);
+      setScore((s) => s + 1);
     }
 
     await recordEvent({
       type: "quiz_answer",
-      lessonId: lecon?.id,
+      lessonId: lecon.id,
       questionId: currentIndex,
       correct,
       timestamp: Date.now(),
@@ -61,13 +79,13 @@ export default function QuizScreen() {
   const finishQuiz = async () => {
     const passRate = score / questions.length;
     const success = passRate >= 0.7;
-    if (success && lecon) {
+    if (success) {
       markLessonCompleted(lecon.id);
     }
 
     await recordEvent({
       type: "lesson_completed",
-      lessonId: lecon?.id,
+      lessonId: lecon.id,
       score,
       timestamp: Date.now(),
     });
@@ -78,7 +96,7 @@ export default function QuizScreen() {
 
   const nextQuestion = () => {
     if (currentIndex + 1 < questions.length) {
-      setCurrentIndex(currentIndex + 1);
+      setCurrentIndex((i) => i + 1);
       setSelected(null);
       setAnswered(false);
     } else {
@@ -99,81 +117,69 @@ export default function QuizScreen() {
   const isLast = currentIndex + 1 === questions.length;
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={LayoutStyles.screen}>
       <Modal visible={showModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
             <Text style={styles.modalEmoji}>{reussi ? "🏆" : "💪"}</Text>
-            <Text style={styles.modalTitre}>
+            <NavText style={styles.modalTitle}>
               {reussi ? "Félicitations !" : "Continue à t'entraîner !"}
-            </Text>
-            <Text style={styles.modalScore}>
+            </NavText>
+            <BodyText style={styles.modalScore}>
               Score : {score} / {questions.length} ({pourcentage}%)
-            </Text>
-            <Text style={styles.modalMessage}>
+            </BodyText>
+            <BodyText muted style={styles.modalMessage}>
               {reussi
                 ? "Leçon validée ! Tu peux passer à la suivante."
                 : "Il faut au moins 70 % pour valider la leçon. Essaie encore !"}
-            </Text>
-
-            <TouchableOpacity
-              style={styles.modalBoutonPrimaire}
-              onPress={restartQuiz}
-            >
-              <Text style={styles.boutonTexte}>🔄 Recommencer</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.modalBoutonSecondaire}
+            </BodyText>
+            <PrimaryButton label="🔄 Recommencer" onPress={restartQuiz} />
+            <PrimaryButton
+              label="📚 Retour aux cours"
+              variant="outline"
               onPress={() => {
                 setShowModal(false);
                 router.push("/cours");
               }}
-            >
-              <Text style={styles.modalBoutonSecondaireTexte}>
-                📚 Retour aux cours
-              </Text>
-            </TouchableOpacity>
+              style={styles.modalSecondary}
+            />
           </View>
         </View>
       </Modal>
 
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.retour} onPress={() => router.back()}>
-          <Text style={styles.retourTexte}>‹ Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.titre}>{`Quiz : ${lecon.titre}`}</Text>
-        <Text style={styles.sousTitre}>
-          Question {currentIndex + 1} / {questions.length}
-        </Text>
-      </View>
+      <ScreenHeader
+        title={`Quiz : ${lecon.titre}`}
+        subtitle={`Question ${currentIndex + 1} / ${questions.length}`}
+        showBack
+        onBack={() => router.back()}
+      />
 
-      <View style={styles.barreContainer}>
+      <View style={LayoutStyles.progressTrack}>
         <View
           style={[
-            styles.barreProgression,
-            {
-              width: `${((currentIndex + 1) / questions.length) * 100}%`,
-            },
+            LayoutStyles.progressFill,
+            { width: `${((currentIndex + 1) / questions.length) * 100}%` },
           ]}
         />
       </View>
 
-      <View style={styles.contenu}>
-        <Text style={styles.question}>{question.question}</Text>
+      <View style={LayoutStyles.content}>
+        <NavText style={styles.question}>{question.question}</NavText>
 
         {question.options.map((option: string) => {
           const isCorrect = option === question.answer;
           const isSelected = option === selected;
           const background = answered
             ? isCorrect
-              ? "#2E7D32"
+              ? EburniKanColors.success
               : isSelected
-                ? "#d32f2f"
-                : "#fff"
-            : "#fff";
+                ? EburniKanColors.error
+                : "#FFFFFF"
+            : "#FFFFFF";
           const textColor =
-            answered && (isCorrect || isSelected) ? "#fff" : "#333";
+            answered && (isCorrect || isSelected)
+              ? EburniKanColors.onPrimary
+              : EburniKanColors.text;
 
           return (
             <TouchableOpacity
@@ -182,115 +188,84 @@ export default function QuizScreen() {
               onPress={() => handleOption(option)}
               disabled={answered}
             >
-              <Text style={[styles.optionText, { color: textColor }]}>
-                {option}
-              </Text>
+              <BodyText style={{ color: textColor }}>{option}</BodyText>
             </TouchableOpacity>
           );
         })}
 
-        {answered && (
-          <Text style={styles.feedback}>
+        {answered ? (
+          <BodyText style={styles.feedback}>
             {selected === question.answer
               ? "Bonne réponse !"
               : `Mauvaise réponse. La bonne réponse est : ${question.answer}`}
-          </Text>
-        )}
+          </BodyText>
+        ) : null}
 
-        <Text style={styles.score}>
+        <BodyText muted style={styles.scoreLine}>
           Score : {score} / {questions.length}
-        </Text>
+        </BodyText>
 
-        <TouchableOpacity
-          style={[
-            styles.boutonCommencer,
-            { backgroundColor: answered ? "#1A237E" : "#888" },
-          ]}
-          onPress={answered ? (isLast ? finishQuiz : nextQuestion) : undefined}
-          disabled={!answered}
-        >
-          <Text style={styles.boutonTexte}>
-            {answered
+        <PrimaryButton
+          label={
+            answered
               ? isLast
                 ? "Terminer"
                 : "Question suivante"
-              : "Choisissez une réponse"}
-          </Text>
-        </TouchableOpacity>
+              : "Choisissez une réponse"
+          }
+          variant={answered ? "primary" : "accent"}
+          disabled={!answered}
+          onPress={answered ? (isLast ? finishQuiz : nextQuestion) : undefined}
+          style={!answered ? styles.btnDisabled : undefined}
+        />
 
-        <TouchableOpacity
-          style={styles.boutonRetour}
+        <PrimaryButton
+          label="Retour aux cours"
+          variant="outline"
           onPress={() => router.push("/cours")}
-        >
-          <Text style={styles.boutonTexte}>Retour aux cours</Text>
-        </TouchableOpacity>
+          style={styles.backCourses}
+        />
       </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9F7F2" },
-  header: { backgroundColor: "#1A237E", padding: 20, paddingTop: 50 },
-  retour: { marginBottom: 16 },
-  retourTexte: { color: "#FBC02D", fontSize: 16, fontWeight: "600" },
-  titre: { color: "#FBC02D", fontSize: 24, fontWeight: "bold" },
-  sousTitre: { color: "#fff", fontSize: 14, marginTop: 8 },
-  barreContainer: {
-    height: 8,
-    backgroundColor: "#ddd",
-    margin: 16,
-    borderRadius: 8,
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: EburniKanSpacing.lg,
   },
-  barreProgression: { height: 8, backgroundColor: "#1A237E", borderRadius: 8 },
-  contenu: { padding: 16 },
+  error: {
+    color: EburniKanColors.error,
+    textAlign: "center",
+  },
+  errorBtn: {
+    marginTop: EburniKanSpacing.md,
+  },
   question: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    color: "#1A237E",
+    marginBottom: EburniKanSpacing.md,
   },
   option: {
-    borderRadius: 10,
+    borderRadius: EburniKanRadii.sm,
     borderWidth: 1,
-    borderColor: "#1A237E",
-    padding: 12,
-    marginBottom: 10,
+    borderColor: EburniKanColors.primary,
+    padding: EburniKanSpacing.sm,
+    marginBottom: EburniKanSpacing.sm,
   },
-  optionText: { fontSize: 16, color: "#333" },
   feedback: {
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1A237E",
+    marginTop: EburniKanSpacing.sm,
+    color: EburniKanColors.primary,
   },
-  score: { marginTop: 10, fontSize: 14, color: "#555" },
-  boutonCommencer: {
-    marginTop: 16,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
+  scoreLine: {
+    marginTop: EburniKanSpacing.sm,
   },
-  boutonRetour: {
-    marginTop: 8,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-    backgroundColor: "#FBC02D",
+  btnDisabled: {
+    opacity: 0.5,
   },
-  boutonTexte: { color: "#F9F7F2", fontWeight: "bold" },
-  erreur: {
-    marginTop: 40,
-    fontSize: 18,
-    textAlign: "center",
-    color: "#d32f2f",
-  },
-  bouton: {
-    marginTop: 16,
-    alignItems: "center",
-    backgroundColor: "#1A237E",
-    padding: 12,
-    borderRadius: 8,
+  backCourses: {
+    marginTop: EburniKanSpacing.sm,
+    marginBottom: EburniKanSpacing.xl,
   },
   modalOverlay: {
     flex: 1,
@@ -299,33 +274,28 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalCard: {
-    backgroundColor: "#F9F7F2",
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: EburniKanColors.background,
+    borderRadius: EburniKanRadii.lg,
+    padding: EburniKanSpacing.lg,
     width: "85%",
     alignItems: "center",
   },
-  modalEmoji: { fontSize: 48 },
-  modalTitre: { fontSize: 20, fontWeight: "bold", marginVertical: 10 },
-  modalScore: { fontSize: 16, color: "#1A237E", marginBottom: 10 },
-  modalMessage: {
-    fontSize: 14,
-    color: "#555",
+  modalEmoji: {
+    fontSize: 48,
+  },
+  modalTitle: {
+    marginVertical: EburniKanSpacing.sm,
     textAlign: "center",
-    marginBottom: 16,
   },
-  modalBoutonPrimaire: {
-    backgroundColor: "#1A237E",
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    marginBottom: 10,
+  modalScore: {
+    color: EburniKanColors.primary,
+    marginBottom: EburniKanSpacing.sm,
   },
-  modalBoutonSecondaire: {
-    backgroundColor: "#E0E0E0",
-    borderRadius: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
+  modalMessage: {
+    textAlign: "center",
+    marginBottom: EburniKanSpacing.md,
   },
-  modalBoutonSecondaireTexte: { color: "#333", fontWeight: "600" },
+  modalSecondary: {
+    marginTop: EburniKanSpacing.sm,
+  },
 });

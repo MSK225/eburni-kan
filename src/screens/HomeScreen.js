@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 import {
     ScrollView,
     StyleSheet,
@@ -8,7 +7,6 @@ import {
 } from "react-native";
 
 export default function HomeScreen() {
-  const router = useRouter();
 
   return (
     <ScrollView style={styles.container}>
@@ -81,7 +79,7 @@ export default function HomeScreen() {
       {/* Proverbe du jour */}
       <View style={styles.carteProverbe}>
         <Text style={styles.proverbeLabel}>📜 PROVERBE DU JOUR</Text>
-        <Text style={styles.proverbeTexte}>"Sran kun su a, wawle tra"</Text>
+        <Text style={styles.proverbeTexte}>&quot;Sran kun su a, wawle tra&quot;</Text>
         <Text style={styles.proverbeTraduction}>
           Seul on va vite, ensemble on va loin — Baoulé
         </Text>

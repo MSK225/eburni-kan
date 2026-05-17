@@ -3,16 +3,22 @@ import React from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { EburniKanColors, EburniKanFonts } from "@/constants/theme";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: EburniKanColors.primary,
+        tabBarInactiveTintColor: EburniKanColors.textMuted,
+        tabBarStyle: {
+          backgroundColor: EburniKanColors.background,
+          borderTopColor: EburniKanColors.border,
+        },
+        tabBarLabelStyle: {
+          fontFamily: EburniKanFonts.navigation,
+          fontSize: 12,
+        },
         headerShown: false,
         tabBarButton: HapticTab,
       }}
@@ -20,7 +26,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Accueil",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),
@@ -51,9 +57,24 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: "Explore",
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="cours"
+        options={{
+          title: "Cours",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <IconSymbol size={28} name="graduationcap.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="videos"
+        options={{
+          title: "Vidéos",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="play.circle.fill" color={color} />
           ),
         }}
       />

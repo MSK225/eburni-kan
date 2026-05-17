@@ -1,25 +1,91 @@
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import Animated, {
+  FadeInDown,
+  FadeInUp,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
+
+import { EburniLogo } from "@/components/brand";
+import { BodyText, MalinkeText, NavText, Title } from "@/components/design-system";
+import { DuotoneImage, LevelSymbol, PagneBackground } from "@/components/immersion";
+import { DUOTONE_IMAGES } from "@/constants/media-assets";
+import { EburniTextStyles } from "@/constants/text-styles";
+import { EburniKanColors, EburniKanRadii, EburniKanSpacing } from "@/constants/theme";
 import { useProgress } from "../../src/context/ProgressContext";
 import { lecons } from "../../src/data/lecons";
+
+function AnimatedModuleCard({
+  emoji,
+  nom,
+  desc,
+  delay,
+  onPress,
+}: {
+  emoji: string;
+  nom: string;
+  desc: string;
+  delay: number;
+  onPress: () => void;
+}) {
+  const scale = useSharedValue(1);
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+  return (
+    <Animated.View entering={FadeInDown.delay(delay).duration(400).springify()} style={animStyle}>
+      <TouchableOpacity
+        style={styles.moduleCard}
+        onPress={onPress}
+        onPressIn={() => { scale.value = withSpring(0.94, { damping: 12, mass: 0.6 }); }}
+        onPressOut={() => { scale.value = withSpring(1, { damping: 12, mass: 0.6 }); }}
+        activeOpacity={1}
+      >
+        <Text style={styles.moduleEmoji}>{emoji}</Text>
+        <NavText style={styles.moduleNom}>{nom}</NavText>
+        <BodyText size="sm" muted style={styles.moduleDesc}>{desc}</BodyText>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const { progress, difficulty } = useProgress();
 
-  const totalLessons = lecons.length;
   const completedLessons = progress.completedLessons.length;
   const quizAccuracy = useMemo(() => {
     if (progress.quizTotal === 0) return 0;
     return Math.round((progress.quizCorrect / progress.quizTotal) * 100);
   }, [progress.quizCorrect, progress.quizTotal]);
+
+  // Pulse animation sur le mot du jour
+  const wordPulse = useSharedValue(1);
+  useEffect(() => {
+    wordPulse.value = withRepeat(
+      withSequence(
+        withTiming(1.03, { duration: 1800 }),
+        withTiming(1, { duration: 1800 }),
+      ),
+      -1,
+      true,
+    );
+  }, [wordPulse]);
+  const wordPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: wordPulse.value }],
+  }));
 
   const getWordOfDay = () => {
     const allWords = lecons.flatMap((lecon) =>
@@ -56,181 +122,173 @@ export default function HomeScreen() {
   const [motDuJour] = useState(getWordOfDay);
 
   return (
+    <PagneBackground>
     <ScrollView style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.salutation}>I ni ce 👋</Text>
-          <Text style={styles.sousTitre}>Découvre ton chemin en bambara</Text>
+          <MalinkeText size="lg" style={styles.salutation}>
+            I ni ce 👋
+          </MalinkeText>
+          <BodyText style={styles.sousTitre}>Découvre ton chemin en bambara</BodyText>
         </View>
-        <TouchableOpacity style={styles.avatarContainer}>
-          <Text style={styles.avatar}>👤</Text>
-        </TouchableOpacity>
+        <EburniLogo size="sm" style={styles.headerLogo} />
       </View>
 
-      <View style={styles.carteMotDuJour}>
-        <Text style={styles.carteLabel}>✨ MOT DU JOUR</Text>
-        <Text style={styles.motDuJour}>{motDuJour.malinke}</Text>
-        <Text style={styles.traduction}>{motDuJour.francais} — Bambara</Text>
-        <Text style={styles.prononciation}>🔊 {motDuJour.prononciation}</Text>
-        <Text style={styles.leconSource}>De la leçon: {motDuJour.lecon}</Text>
-      </View>
+      <Animated.View style={[styles.carteMotDuJour, wordPulseStyle]} entering={FadeInUp.duration(500)}>
+        <NavText style={styles.carteLabel}>✨ Mot du jour</NavText>
+        <MalinkeText size="lg" style={styles.motDuJour}>
+          {motDuJour.malinke}
+        </MalinkeText>
+        <BodyText style={styles.traduction}>
+          {motDuJour.francais} — Bambara
+        </BodyText>
+        <BodyText size="sm" style={styles.prononciation}>
+          🔊 {motDuJour.prononciation}
+        </BodyText>
+        <BodyText size="sm" style={styles.leconSource}>
+          De la leçon : {motDuJour.lecon}
+        </BodyText>
+      </Animated.View>
 
       <View style={styles.carteProgression}>
-        <Text style={styles.progressionTitre}>🔥 Ta progression</Text>
+        <NavText variant="text" style={styles.progressionTitre}>
+          🔥 Ta progression
+        </NavText>
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statNombre}>{completedLessons}</Text>
-            <Text style={styles.statLabel}>Leçons finies</Text>
+            <Text style={EburniTextStyles.statNumber}>{completedLessons}</Text>
+            <BodyText size="sm" muted style={styles.statLabel}>
+              Leçons finies
+            </BodyText>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNombre}>{progress.quizTotal}</Text>
-            <Text style={styles.statLabel}>Questions répond.</Text>
+            <Text style={EburniTextStyles.statNumber}>{progress.quizTotal}</Text>
+            <BodyText size="sm" muted style={styles.statLabel}>
+              Questions répond.
+            </BodyText>
           </View>
           <View style={styles.statItem}>
-            <Text style={styles.statNombre}>{quizAccuracy}%</Text>
-            <Text style={styles.statLabel}>Précision quiz</Text>
+            <Text style={EburniTextStyles.statNumber}>{quizAccuracy}%</Text>
+            <BodyText size="sm" muted style={styles.statLabel}>
+              Précision quiz
+            </BodyText>
           </View>
         </View>
-        <Text style={styles.progressionSummary}>
+        <LevelSymbol difficulty={difficulty} style={styles.levelRow} />
+        <BodyText size="sm" muted style={styles.progressionSummary}>
           Niveau recommandé : {difficulty}
-        </Text>
+        </BodyText>
       </View>
 
-      <Text style={styles.sectionTitre}>Modules</Text>
+      <Title variant="primary" size="small" style={styles.sectionTitre}>
+        Modules
+      </Title>
+
       <View style={styles.grilleModules}>
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push("/cours")}
-        >
-          <Text style={styles.moduleEmoji}>📚</Text>
-          <Text style={styles.moduleNom}>Cours</Text>
-          <Text style={styles.moduleDesc}>Leçons par niveaux</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push("/jeux")}
-        >
-          <Text style={styles.moduleEmoji}>🎮</Text>
-          <Text style={styles.moduleNom}>Jeux</Text>
-          <Text style={styles.moduleDesc}>Memory & Quiz</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push("/culture")}
-        >
-          <Text style={styles.moduleEmoji}>🌍</Text>
-          <Text style={styles.moduleNom}>Culture</Text>
-          <Text style={styles.moduleDesc}>Proverbes & Contes</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.moduleCard}
-          onPress={() => router.push("/profil")}
-        >
-          <Text style={styles.moduleEmoji}>🏆</Text>
-          <Text style={styles.moduleNom}>Profil</Text>
-          <Text style={styles.moduleDesc}>Badges & Certificats</Text>
-        </TouchableOpacity>
+        <AnimatedModuleCard
+          emoji="📚" nom="Cours" desc="Leçons par niveaux"
+          delay={0} onPress={() => router.push("/cours")}
+        />
+        <AnimatedModuleCard
+          emoji="🎮" nom="Jeux" desc="Memory & Quiz"
+          delay={80} onPress={() => router.push("/jeux")}
+        />
+        <AnimatedModuleCard
+          emoji="🌍" nom="Culture" desc="Proverbes & Contes"
+          delay={160} onPress={() => router.push("/culture")}
+        />
+        <AnimatedModuleCard
+          emoji="🏆" nom="Profil" desc="Badges & Certificats"
+          delay={240} onPress={() => router.push("/profil")}
+        />
       </View>
 
-      <View style={styles.carteProverbe}>
-        <Text style={styles.proverbeLabel}>📜 PROVERBE DU JOUR</Text>
-        <Text style={styles.proverbeTexte}>"Mogoya ka ca siya la"</Text>
-        <Text style={styles.proverbeTraduction}>
-          L'humanité est plus grande que l'ethnie — Bambara
-        </Text>
+      <View style={styles.proverbeWrap}>
+        <DuotoneImage source={DUOTONE_IMAGES.savane} style={styles.proverbeDuotone} />
+        <View style={styles.carteProverbe}>
+          <NavText style={styles.proverbeLabel}>📜 Proverbe du jour</NavText>
+          <MalinkeText style={styles.proverbeTexte}>
+            &ldquo;Mogoya ka ca siya la&rdquo;
+          </MalinkeText>
+          <BodyText size="sm" style={styles.proverbeTraduction}>
+            L&apos;humanité est plus grande que l&apos;ethnie — Bambara
+          </BodyText>
+        </View>
       </View>
     </ScrollView>
+    </PagneBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9F7F2",
+    backgroundColor: EburniKanColors.background,
   },
   header: {
-    backgroundColor: "#1A237E",
-    padding: 24,
+    backgroundColor: EburniKanColors.primary,
+    padding: EburniKanSpacing.lg,
     paddingTop: 50,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   salutation: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#FBC02D",
+    color: EburniKanColors.accent,
   },
   sousTitre: {
-    fontSize: 14,
-    color: "#F9F7F2",
-    marginTop: 4,
+    color: EburniKanColors.onPrimary,
+    marginTop: EburniKanSpacing.xs,
   },
-  avatarContainer: {
-    backgroundColor: "#FBC02D",
-    borderRadius: 30,
-    width: 48,
-    height: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatar: {
-    fontSize: 24,
+  headerLogo: {
+    backgroundColor: EburniKanColors.accent,
+    borderRadius: 24,
+    padding: 4,
   },
   carteMotDuJour: {
-    margin: 16,
-    padding: 20,
-    backgroundColor: "#1A237E",
-    borderRadius: 16,
+    margin: EburniKanSpacing.md,
+    padding: EburniKanSpacing.lg,
+    backgroundColor: EburniKanColors.primary,
+    borderRadius: EburniKanRadii.lg,
     alignItems: "center",
     elevation: 4,
   },
   carteLabel: {
-    fontSize: 12,
-    color: "#FBC02D",
+    color: EburniKanColors.accent,
     letterSpacing: 2,
-    fontWeight: "bold",
+    textTransform: "uppercase",
   },
   motDuJour: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#FBC02D",
-    marginTop: 8,
+    color: EburniKanColors.accent,
+    marginTop: EburniKanSpacing.sm,
     textAlign: "center",
   },
   traduction: {
-    fontSize: 16,
-    color: "#F9F7F2",
-    marginTop: 4,
+    color: EburniKanColors.onPrimary,
+    marginTop: EburniKanSpacing.xs,
+    textAlign: "center",
   },
   prononciation: {
-    fontSize: 14,
-    color: "#FBC02D",
-    marginTop: 8,
+    color: EburniKanColors.accent,
+    marginTop: EburniKanSpacing.sm,
   },
   leconSource: {
-    fontSize: 12,
-    color: "#F9F7F2",
-    marginTop: 4,
-    opacity: 0.8,
+    color: EburniKanColors.onPrimary,
+    marginTop: EburniKanSpacing.xs,
+    opacity: 0.85,
     fontStyle: "italic",
+    textAlign: "center",
   },
   carteProgression: {
-    margin: 16,
+    margin: EburniKanSpacing.md,
     marginTop: 0,
-    padding: 20,
+    padding: EburniKanSpacing.lg,
     backgroundColor: "#fff",
-    borderRadius: 16,
+    borderRadius: EburniKanRadii.lg,
     elevation: 2,
   },
   progressionTitre: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#212121",
-    marginBottom: 16,
+    marginBottom: EburniKanSpacing.md,
   },
   statsContainer: {
     flexDirection: "row",
@@ -239,85 +297,78 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: "center",
   },
-  statNombre: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1A237E",
-  },
   statLabel: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 4,
+    marginTop: EburniKanSpacing.xs,
     textAlign: "center",
   },
   sectionTitre: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#212121",
-    marginLeft: 16,
-    marginBottom: 12,
+    marginLeft: EburniKanSpacing.md,
+    marginBottom: EburniKanSpacing.sm,
+    textTransform: "none",
   },
   grilleModules: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingHorizontal: 8,
+    paddingHorizontal: EburniKanSpacing.sm,
     justifyContent: "space-between",
-    marginHorizontal: 8,
+    marginHorizontal: EburniKanSpacing.sm,
   },
   moduleCard: {
     backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: EburniKanRadii.lg,
+    padding: EburniKanSpacing.md,
     width: "47%",
-    marginBottom: 12,
+    marginBottom: EburniKanSpacing.sm,
     elevation: 2,
     alignItems: "center",
     borderBottomWidth: 3,
-    borderBottomColor: "#FBC02D",
+    borderBottomColor: EburniKanColors.accent,
   },
   moduleEmoji: {
     fontSize: 36,
   },
   moduleNom: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1A237E",
-    marginTop: 8,
+    marginTop: EburniKanSpacing.sm,
   },
   moduleDesc: {
-    fontSize: 12,
-    color: "#888",
-    marginTop: 4,
+    marginTop: EburniKanSpacing.xs,
     textAlign: "center",
   },
+  levelRow: {
+    marginTop: EburniKanSpacing.md,
+  },
   progressionSummary: {
-    marginTop: 12,
-    color: "#555",
-    fontSize: 14,
+    marginTop: EburniKanSpacing.sm,
+  },
+  proverbeWrap: {
+    margin: EburniKanSpacing.md,
+    marginBottom: EburniKanSpacing.xl,
+    borderRadius: EburniKanRadii.lg,
+    overflow: "hidden",
+    minHeight: 140,
+  },
+  proverbeDuotone: {
+    ...StyleSheet.absoluteFillObject,
   },
   carteProverbe: {
-    margin: 16,
-    padding: 20,
-    backgroundColor: "#1A237E",
-    borderRadius: 16,
-    marginBottom: 32,
+    padding: EburniKanSpacing.lg,
+    backgroundColor: "rgba(26, 35, 126, 0.82)",
+    minHeight: 140,
+    justifyContent: "center",
   },
   proverbeLabel: {
-    fontSize: 12,
-    color: "#FBC02D",
+    color: EburniKanColors.accent,
     letterSpacing: 2,
-    fontWeight: "bold",
-    marginBottom: 12,
+    textTransform: "uppercase",
+    marginBottom: EburniKanSpacing.sm,
   },
   proverbeTexte: {
-    fontSize: 16,
-    color: "#F9F7F2",
-    fontStyle: "italic",
-    lineHeight: 24,
+    color: EburniKanColors.onPrimary,
+    textAlign: "center",
   },
   proverbeTraduction: {
-    fontSize: 13,
-    color: "#FBC02D",
-    marginTop: 8,
+    color: EburniKanColors.accent,
+    marginTop: EburniKanSpacing.sm,
+    textAlign: "center",
   },
 });

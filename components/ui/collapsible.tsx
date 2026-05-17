@@ -4,7 +4,7 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { Colors, EburniKanColors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
@@ -37,9 +37,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    backgroundColor: EburniKanColors.primary, // Fond bleu indigo
+    padding: 8,
+    borderRadius: 4,
   },
   content: {
     marginTop: 6,
     marginLeft: 24,
+    backgroundColor: EburniKanColors.background, // Fond blanc coton
+    padding: 8,
+    borderRadius: 4,
   },
 });

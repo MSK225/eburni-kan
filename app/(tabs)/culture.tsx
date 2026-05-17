@@ -1,96 +1,199 @@
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from "react-native";
+
+import { BodyText, MalinkeText, NavText } from "@/components/design-system";
+import { EburniSection } from "@/components/layout";
+import { DuotoneImage, PagneBackground } from "@/components/immersion";
+import { CULTURE_GALLERY, DUOTONE_IMAGES, TALE_VIDEOS, TALE_THUMBNAILS } from "@/constants/media-assets";
+import { EburniKanColors, EburniKanRadii, EburniKanSpacing } from "@/constants/theme";
 import { VideoPlayer } from "../../components/ui/video-player";
 import {
-    getDailyExpression,
-    getDailyProverb,
-    tales,
+  getDailyExpression,
+  getDailyProverb,
+  tales,
 } from "../../src/data/culture";
 
 export default function CultureScreen() {
   const dailyProverb = getDailyProverb();
   const dailyExpression = getDailyExpression();
-  const [selectedTale, setSelectedTale] = useState<any>(null);
+  const [selectedTale, setSelectedTale] = useState<(typeof tales)[0] | null>(null);
+  const [selectedPronunciation, setSelectedPronunciation] = useState<any>(null);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [isVideoModalVisible, setIsVideoModalVisible] = useState(false);
+  const [currentVideoType, setCurrentVideoType] = useState<"tale" | "pronunciation" | "lesson">("tale");
 
-  const playVideo = (tale: any) => {
+  const pronunciationTutorials = useMemo(() => [
+    { id: 1, title: "Les Voyelles Bambara", description: "Prononciation des 5 voyelles essentielles", duration: "4 min" },
+    { id: 2, title: "Consonnes & Nasales", description: "Sons particuliers du bambara", duration: "5 min" },
+    { id: 3, title: "L'Accent & l'Intonation", description: "Rythme naturel de la langue", duration: "5 min" },
+  ], []);
+
+  const lessonIntroVideos = useMemo(() => [
+    { id: 1, title: "Alphabet Bambara", description: "Découvrez les bases du système alphabétique", duration: "5 min" },
+    { id: 2, title: "Vocabulaire Fondamental", description: "Les mots essentiels pour communiquer", duration: "5 min" },
+    { id: 3, title: "Grammaire Basique", description: "Structures grammaticales simples", duration: "6 min" },
+  ], []);
+
+  const playVideo = useCallback((tale: (typeof tales)[0]) => {
     setSelectedTale(tale);
+    setCurrentVideoType("tale");
     setIsVideoModalVisible(true);
-  };
+  }, []);
 
-  const closeVideo = () => {
+  const playPronunciation = useCallback((tutorial: any) => {
+    setSelectedPronunciation(tutorial);
+    setCurrentVideoType("pronunciation");
+    setIsVideoModalVisible(true);
+  }, []);
+
+  const playLesson = useCallback((lesson: any) => {
+    setSelectedLesson(lesson);
+    setCurrentVideoType("lesson");
+    setIsVideoModalVisible(true);
+  }, []);
+
+  const closeVideo = useCallback(() => {
     setIsVideoModalVisible(false);
     setSelectedTale(null);
-  };
+    setSelectedPronunciation(null);
+    setSelectedLesson(null);
+  }, []);
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.content}
-      >
-        <View style={styles.header}>
-          <IconSymbol name="book.fill" size={48} color="#FBC02D" />
-          <Text style={styles.title}>Culture Bambara</Text>
+    <PagneBackground>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+        <View style={styles.heroWrap}>
+          <DuotoneImage source={DUOTONE_IMAGES.culture} style={styles.heroImage} />
+          <View style={styles.heroOverlay}>
+            <NavText style={styles.heroTitle}>Culture & Tradition</NavText>
+            <BodyText size="sm" style={styles.heroSub}>
+              Patrimoine du Nord de la Côte d&apos;Ivoire
+            </BodyText>
+          </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Proverbe du jour</Text>
-          <Text style={styles.proverb}>"{dailyProverb.malinke}"</Text>
-          <Text style={styles.translation}>{dailyProverb.francais}</Text>
-          <Text style={styles.explanation}>{dailyProverb.explication}</Text>
-        </View>
+        <EburniSection title="Proverbe du jour">
+          <MalinkeText>&ldquo;{dailyProverb.malinke}&rdquo;</MalinkeText>
+          <BodyText style={styles.translation}>{dailyProverb.francais}</BodyText>
+          <BodyText size="sm" muted>
+            {dailyProverb.explication}
+          </BodyText>
+        </EburniSection>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Expression du jour</Text>
-          <Text style={styles.expression}>"{dailyExpression.malinke}"</Text>
-          <Text style={styles.translation}>{dailyExpression.francais}</Text>
-          <Text style={styles.explanation}>{dailyExpression.contexte}</Text>
-        </View>
+        <EburniSection title="Expression du jour">
+          <MalinkeText>&ldquo;{dailyExpression.malinke}&rdquo;</MalinkeText>
+          <BodyText style={styles.translation}>{dailyExpression.francais}</BodyText>
+          <BodyText size="sm" muted>
+            {dailyExpression.contexte}
+          </BodyText>
+        </EburniSection>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Contes traditionnels</Text>
-          <Text style={styles.description}>
-            Découvrez les contes et légendes qui transmettent la sagesse bambara
-            de génération en génération.
-          </Text>
+        <EburniSection title="Galerie du Nord">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {CULTURE_GALLERY.map((img, i) => (
+              <DuotoneImage key={i} source={img} style={styles.galleryItem} />
+            ))}
+          </ScrollView>
+        </EburniSection>
+
+        <EburniSection title="Contes traditionnels (vidéos)">
+          <BodyText size="sm" muted style={styles.talesIntro}>
+            Découvrez les contes qui transmettent la sagesse de génération en
+            génération.
+          </BodyText>
           {tales.map((tale) => (
             <TouchableOpacity
               key={tale.id}
               style={styles.taleCard}
               onPress={() => playVideo(tale)}
+              accessibilityRole="button"
             >
-              <View style={styles.taleContent}>
-                <IconSymbol name="play.circle.fill" size={32} color="#FBC02D" />
-                <View style={styles.taleInfo}>
-                  <Text style={styles.taleTitle}>{tale.title}</Text>
-                  <Text style={styles.taleDescription}>{tale.description}</Text>
-                  <Text style={styles.taleDuration}>{tale.duration}</Text>
-                </View>
+              {tale.thumbnail ? (
+                <DuotoneImage source={tale.thumbnail} style={styles.taleThumb} />
+              ) : null}
+              <View style={styles.taleInfo}>
+                <NavText>{tale.title}</NavText>
+                <BodyText size="sm" muted>
+                  {tale.description}
+                </BodyText>
+                <BodyText size="sm" style={styles.taleDuration}>
+                  ▶ {tale.duration}
+                </BodyText>
               </View>
             </TouchableOpacity>
           ))}
-        </View>
+        </EburniSection>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            À propos de la culture bambara
-          </Text>
-          <Text style={styles.story}>
+        <EburniSection title="🗣️ Tutoriels Prononciation">
+          <BodyText size="sm" muted style={styles.talesIntro}>
+            Perfectionnez votre accent et maîtrisez les sons du bambara.
+          </BodyText>
+          {pronunciationTutorials.map((tutorial, idx) => (
+            <TouchableOpacity
+              key={idx}
+              style={styles.taleCard}
+              onPress={() => playPronunciation(tutorial)}
+              accessibilityRole="button"
+            >
+              <DuotoneImage
+                source={TALE_THUMBNAILS[idx % TALE_THUMBNAILS.length]}
+                style={styles.taleThumb}
+              />
+              <View style={styles.taleInfo}>
+                <NavText>{tutorial.title}</NavText>
+                <BodyText size="sm" muted>
+                  {tutorial.description}
+                </BodyText>
+                <BodyText size="sm" style={styles.taleDuration}>
+                  ▶ {tutorial.duration}
+                </BodyText>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </EburniSection>
+
+        <EburniSection title="🎓 Introductions aux Leçons">
+          <BodyText size="sm" muted style={styles.talesIntro}>
+            Commencez chaque leçon par une vidéo d&apos;introduction.
+          </BodyText>
+          {lessonIntroVideos.map((lesson, idx) => (
+            <TouchableOpacity
+              key={idx}
+              style={styles.taleCard}
+              onPress={() => playLesson(lesson)}
+              accessibilityRole="button"
+            >
+              <DuotoneImage
+                source={TALE_THUMBNAILS[(idx + 2) % TALE_THUMBNAILS.length]}
+                style={styles.taleThumb}
+              />
+              <View style={styles.taleInfo}>
+                <NavText>{lesson.title}</NavText>
+                <BodyText size="sm" muted>
+                  {lesson.description}
+                </BodyText>
+                <BodyText size="sm" style={styles.taleDuration}>
+                  ▶ {lesson.duration}
+                </BodyText>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </EburniSection>
+
+        <EburniSection title="À propos">
+          <BodyText>
             La culture bambara est riche en traditions orales, musique, danse et
             artisanat. Les contes, proverbes et expressions sont des outils
             essentiels pour transmettre les valeurs sociales, morales et
-            spirituelles du peuple bambara.
-          </Text>
-        </View>
+            spirituelles du peuple mandingue.
+          </BodyText>
+        </EburniSection>
       </ScrollView>
 
       <Modal
@@ -99,123 +202,100 @@ export default function CultureScreen() {
         onRequestClose={closeVideo}
       >
         <View style={styles.modalContainer}>
-          {selectedTale && (
+          {currentVideoType === "tale" && selectedTale ? (
             <VideoPlayer
               source={selectedTale.videoSource}
               title={selectedTale.title}
               onClose={closeVideo}
             />
-          )}
+          ) : currentVideoType === "pronunciation" && selectedPronunciation ? (
+            <VideoPlayer
+              source={TALE_VIDEOS[selectedPronunciation.id - 1]}
+              title={selectedPronunciation.title}
+              onClose={closeVideo}
+            />
+          ) : currentVideoType === "lesson" && selectedLesson ? (
+            <VideoPlayer
+              source={TALE_VIDEOS[selectedLesson.id - 1]}
+              title={selectedLesson.title}
+              onClose={closeVideo}
+            />
+          ) : null}
         </View>
       </Modal>
-    </View>
+    </PagneBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
-    backgroundColor: "#F9F7F2",
   },
   content: {
-    paddingBottom: 32,
+    paddingBottom: EburniKanSpacing.xl,
   },
-  header: {
-    backgroundColor: "#1A237E",
-    padding: 24,
-    paddingTop: 50,
-    alignItems: "center",
+  heroWrap: {
+    margin: EburniKanSpacing.md,
+    borderRadius: EburniKanRadii.lg,
+    overflow: "hidden",
+    height: 160,
   },
-  title: {
-    color: "#FBC02D",
-    fontSize: 28,
-    fontWeight: "bold",
-    marginTop: 12,
-    textAlign: "center",
+  heroImage: {
+    height: 160,
+    borderRadius: EburniKanRadii.lg,
   },
-  section: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 20,
-    margin: 16,
-    elevation: 2,
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "flex-end",
+    padding: EburniKanSpacing.md,
+    backgroundColor: "rgba(26, 35, 126, 0.35)",
   },
-  sectionTitle: {
-    color: "#1A237E",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
+  heroTitle: {
+    color: EburniKanColors.accent,
   },
-  proverb: {
-    color: "#333",
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  expression: {
-    color: "#4A148C",
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 8,
+  heroSub: {
+    color: EburniKanColors.onPrimary,
+    marginTop: EburniKanSpacing.xs,
   },
   translation: {
-    color: "#1A237E",
-    fontSize: 14,
+    color: EburniKanColors.primary,
     fontStyle: "italic",
-    marginBottom: 12,
+    marginVertical: EburniKanSpacing.sm,
   },
-  explanation: {
-    color: "#555",
-    lineHeight: 22,
-    fontSize: 14,
+  galleryItem: {
+    width: 140,
+    height: 100,
+    borderRadius: EburniKanRadii.sm,
+    marginRight: EburniKanSpacing.sm,
   },
-  description: {
-    color: "#555",
-    lineHeight: 22,
-    fontSize: 14,
-    marginBottom: 16,
-  },
-  story: {
-    color: "#555",
-    lineHeight: 22,
-    fontSize: 14,
+  talesIntro: {
+    marginBottom: EburniKanSpacing.md,
   },
   taleCard: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E0E0E0",
-  },
-  taleContent: {
     flexDirection: "row",
-    alignItems: "center",
+    backgroundColor: EburniKanColors.background,
+    borderRadius: EburniKanRadii.md,
+    marginBottom: EburniKanSpacing.sm,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: EburniKanColors.border,
+  },
+  taleThumb: {
+    width: 100,
+    height: 100,
   },
   taleInfo: {
     flex: 1,
-    marginLeft: 12,
-  },
-  taleTitle: {
-    color: "#1A237E",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  taleDescription: {
-    color: "#555",
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 4,
+    padding: EburniKanSpacing.sm,
+    justifyContent: "center",
   },
   taleDuration: {
-    color: "#888",
-    fontSize: 12,
+    color: EburniKanColors.primary,
+    marginTop: EburniKanSpacing.xs,
   },
   modalContainer: {
     flex: 1,
     backgroundColor: "#000",
     justifyContent: "center",
-    alignItems: "center",
   },
 });
