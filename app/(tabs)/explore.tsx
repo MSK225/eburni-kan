@@ -11,6 +11,7 @@ import { AudioPracticeModule } from "@/components/interactive/AudioPracticeModul
 import { FlashcardModule } from "@/components/interactive/FlashcardModule";
 import { MultipleChoiceModule } from "@/components/interactive/MultipleChoiceModule";
 import { ReadingModule } from "@/components/interactive/ReadingModule";
+import { PagneBackground } from "@/components/immersion";
 import { useProgress } from "@/src/context/ProgressContext";
 import { lecons } from "@/src/data/lecons";
 
@@ -68,8 +69,9 @@ export default function ExploreScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.header}>Modules interactifs</Text>
+    <PagneBackground>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <Text style={styles.header}>Modules interactifs</Text>
       <Text style={styles.subtitle}>
         Des activités simples pour apprendre sans écrire : flashcards, quiz et
         lecture interactive.
@@ -138,14 +140,15 @@ export default function ExploreScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </PagneBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9F7F2",
+    backgroundColor: "transparent",
   },
   content: {
     padding: 16,

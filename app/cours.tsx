@@ -2,11 +2,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 
-import {
-  BodyText,
-  NavText,
-  PrimaryButton,
-} from "@/components/design-system";
+import { BodyText, NavText, PrimaryButton } from "@/components/design-system";
 import { PagneBackground } from "@/components/immersion";
 import { ScreenHeader } from "@/components/layout";
 import { EburniTextStyles } from "@/constants/text-styles";
@@ -22,13 +18,7 @@ import { lecons } from "../src/data/lecons";
 
 export default function CoursScreen() {
   const router = useRouter();
-  const {
-    progress,
-    difficulty,
-    markLessonCompleted,
-    recordEvent,
-    syncProgress,
-  } = useProgress();
+  const { progress, markLessonCompleted, recordEvent } = useProgress();
   const completedLessons = progress.completedLessons;
 
   const accessibleLessonId = Math.min(
@@ -50,30 +40,8 @@ export default function CoursScreen() {
       <ScrollView style={LayoutStyles.screen}>
         <ScreenHeader title="📚 Cours" subtitle="Bambara — Niveau A1" />
 
-        <View style={LayoutStyles.infoBox}>
-          <NavText variant="primary" style={styles.infoTitle}>
-            Niveau d&apos;apprentissage : {difficulty}
-          </NavText>
-          <BodyText size="sm" style={styles.infoLine}>
-            Leçons terminées : {completedLessons.length} / {lecons.length}
-          </BodyText>
-          <BodyText size="sm" style={styles.infoLine}>
-            Leçon suivante accessible : {accessibleLessonId}
-          </BodyText>
-          <BodyText size="sm" style={styles.infoLine}>
-            Statut sync : {progress.synced ? "Synchronisé" : "Non synchronisé"}
-          </BodyText>
-          <BodyText size="sm" style={styles.infoLine}>
-            Mode : {progress.offline ? "Hors ligne" : "En ligne"}
-          </BodyText>
-          <PrimaryButton
-            label="Synchroniser manuellement"
-            variant="primary"
-            fullWidth={false}
-            onPress={() => syncProgress()}
-            style={styles.syncBtn}
-          />
-        </View>
+
+
 
         <View style={styles.list}>
           {lecons.map((lecon) => {
@@ -192,17 +160,6 @@ export default function CoursScreen() {
 }
 
 const styles = StyleSheet.create({
-  infoTitle: {
-    marginBottom: EburniKanSpacing.xs,
-  },
-  infoLine: {
-    color: EburniKanColors.primary,
-    marginTop: EburniKanSpacing.xs,
-  },
-  syncBtn: {
-    marginTop: EburniKanSpacing.sm,
-    alignSelf: "flex-start",
-  },
   list: {
     padding: EburniKanSpacing.md,
     paddingTop: 0,

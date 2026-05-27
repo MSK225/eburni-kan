@@ -44,7 +44,7 @@ function RootLayoutNav() {
     } else if (!isAuthenticated && !inAuthGroup) {
       router.replace("/login");
     }
-  }, [isAuthenticated, loading, segments]);
+  }, [isAuthenticated, loading, segments, router]);
 
   if (loading) {
     return null;

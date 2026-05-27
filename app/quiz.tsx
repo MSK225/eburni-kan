@@ -15,6 +15,7 @@ import {
   PrimaryButton,
 } from "@/components/design-system";
 import { ScreenHeader } from "@/components/layout";
+import { PagneBackground } from "@/components/immersion";
 import { LayoutStyles } from "@/constants/layout-styles";
 import { EburniKanColors, EburniKanRadii, EburniKanSpacing } from "@/constants/theme";
 import { useProgress } from "../src/context/ProgressContext";
@@ -117,116 +118,118 @@ export default function QuizScreen() {
   const isLast = currentIndex + 1 === questions.length;
 
   return (
-    <ScrollView style={LayoutStyles.screen}>
-      <Modal visible={showModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalEmoji}>{reussi ? "🏆" : "💪"}</Text>
-            <NavText style={styles.modalTitle}>
-              {reussi ? "Félicitations !" : "Continue à t'entraîner !"}
-            </NavText>
-            <BodyText style={styles.modalScore}>
-              Score : {score} / {questions.length} ({pourcentage}%)
-            </BodyText>
-            <BodyText muted style={styles.modalMessage}>
-              {reussi
-                ? "Leçon validée ! Tu peux passer à la suivante."
-                : "Il faut au moins 70 % pour valider la leçon. Essaie encore !"}
-            </BodyText>
-            <PrimaryButton label="🔄 Recommencer" onPress={restartQuiz} />
-            <PrimaryButton
-              label="📚 Retour aux cours"
-              variant="outline"
-              onPress={() => {
-                setShowModal(false);
-                router.push("/cours");
-              }}
-              style={styles.modalSecondary}
-            />
+    <PagneBackground>
+      <ScrollView style={LayoutStyles.screen}>
+        <Modal visible={showModal} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalEmoji}>{reussi ? "🏆" : "💪"}</Text>
+              <NavText style={styles.modalTitle}>
+                {reussi ? "Félicitations !" : "Continue à t'entraîner !"}
+              </NavText>
+              <BodyText style={styles.modalScore}>
+                Score : {score} / {questions.length} ({pourcentage}%)
+              </BodyText>
+              <BodyText muted style={styles.modalMessage}>
+                {reussi
+                  ? "Leçon validée ! Tu peux passer à la suivante."
+                  : "Il faut au moins 70 % pour valider la leçon. Essaie encore !"}
+              </BodyText>
+              <PrimaryButton label="🔄 Recommencer" onPress={restartQuiz} />
+              <PrimaryButton
+                label="📚 Retour aux cours"
+                variant="outline"
+                onPress={() => {
+                  setShowModal(false);
+                  router.push("/cours");
+                }}
+                style={styles.modalSecondary}
+              />
+            </View>
           </View>
+        </Modal>
+
+        <ScreenHeader
+          title={`Quiz : ${lecon.titre}`}
+          subtitle={`Question ${currentIndex + 1} / ${questions.length}`}
+          showBack
+          onBack={() => router.back()}
+        />
+
+        <View style={LayoutStyles.progressTrack}>
+          <View
+            style={[
+              LayoutStyles.progressFill,
+              { width: `${((currentIndex + 1) / questions.length) * 100}%` },
+            ]}
+          />
         </View>
-      </Modal>
 
-      <ScreenHeader
-        title={`Quiz : ${lecon.titre}`}
-        subtitle={`Question ${currentIndex + 1} / ${questions.length}`}
-        showBack
-        onBack={() => router.back()}
-      />
+        <View style={LayoutStyles.content}>
+          <NavText style={styles.question}>{question.question}</NavText>
 
-      <View style={LayoutStyles.progressTrack}>
-        <View
-          style={[
-            LayoutStyles.progressFill,
-            { width: `${((currentIndex + 1) / questions.length) * 100}%` },
-          ]}
-        />
-      </View>
+          {question.options.map((option: string) => {
+            const isCorrect = option === question.answer;
+            const isSelected = option === selected;
+            const background = answered
+              ? isCorrect
+                ? EburniKanColors.success
+                : isSelected
+                  ? EburniKanColors.error
+                  : "#FFFFFF"
+              : "#FFFFFF";
+            const textColor =
+              answered && (isCorrect || isSelected)
+                ? EburniKanColors.onPrimary
+                : EburniKanColors.text;
 
-      <View style={LayoutStyles.content}>
-        <NavText style={styles.question}>{question.question}</NavText>
+            return (
+              <TouchableOpacity
+                key={option}
+                style={[styles.option, { backgroundColor: background }]}
+                onPress={() => handleOption(option)}
+                disabled={answered}
+              >
+                <BodyText style={{ color: textColor }}>{option}</BodyText>
+              </TouchableOpacity>
+            );
+          })}
 
-        {question.options.map((option: string) => {
-          const isCorrect = option === question.answer;
-          const isSelected = option === selected;
-          const background = answered
-            ? isCorrect
-              ? EburniKanColors.success
-              : isSelected
-                ? EburniKanColors.error
-                : "#FFFFFF"
-            : "#FFFFFF";
-          const textColor =
-            answered && (isCorrect || isSelected)
-              ? EburniKanColors.onPrimary
-              : EburniKanColors.text;
+          {answered ? (
+            <BodyText style={styles.feedback}>
+              {selected === question.answer
+                ? "Bonne réponse !"
+                : `Mauvaise réponse. La bonne réponse est : ${question.answer}`}
+            </BodyText>
+          ) : null}
 
-          return (
-            <TouchableOpacity
-              key={option}
-              style={[styles.option, { backgroundColor: background }]}
-              onPress={() => handleOption(option)}
-              disabled={answered}
-            >
-              <BodyText style={{ color: textColor }}>{option}</BodyText>
-            </TouchableOpacity>
-          );
-        })}
-
-        {answered ? (
-          <BodyText style={styles.feedback}>
-            {selected === question.answer
-              ? "Bonne réponse !"
-              : `Mauvaise réponse. La bonne réponse est : ${question.answer}`}
+          <BodyText muted style={styles.scoreLine}>
+            Score : {score} / {questions.length}
           </BodyText>
-        ) : null}
 
-        <BodyText muted style={styles.scoreLine}>
-          Score : {score} / {questions.length}
-        </BodyText>
+          <PrimaryButton
+            label={
+              answered
+                ? isLast
+                  ? "Terminer"
+                  : "Question suivante"
+                : "Choisissez une réponse"
+            }
+            variant={answered ? "primary" : "accent"}
+            disabled={!answered}
+            onPress={answered ? (isLast ? finishQuiz : nextQuestion) : undefined}
+            style={!answered ? styles.btnDisabled : undefined}
+          />
 
-        <PrimaryButton
-          label={
-            answered
-              ? isLast
-                ? "Terminer"
-                : "Question suivante"
-              : "Choisissez une réponse"
-          }
-          variant={answered ? "primary" : "accent"}
-          disabled={!answered}
-          onPress={answered ? (isLast ? finishQuiz : nextQuestion) : undefined}
-          style={!answered ? styles.btnDisabled : undefined}
-        />
-
-        <PrimaryButton
-          label="Retour aux cours"
-          variant="outline"
-          onPress={() => router.push("/cours")}
-          style={styles.backCourses}
-        />
-      </View>
-    </ScrollView>
+          <PrimaryButton
+            label="Retour aux cours"
+            variant="outline"
+            onPress={() => router.push("/cours")}
+            style={styles.backCourses}
+          />
+        </View>
+      </ScrollView>
+    </PagneBackground>
   );
 }
 

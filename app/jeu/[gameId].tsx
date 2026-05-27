@@ -1,13 +1,14 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import { PagneBackground } from "@/components/immersion";
 import { useProgress } from "../../src/context/ProgressContext";
 
 const gameDetails = [
@@ -206,7 +207,8 @@ export default function GameScreen() {
       });
       setShowResult(true);
     }
-  }, [finished, started, difficulty.label, recordEvent, timer]);
+  }, [finished, started, difficulty.label, difficulty.time, recordEvent, timer]);
+
 
   const handleCardPress = (card: Card) => {
     if (revealedIds.includes(card.id) || matchedPairs.includes(card.pairId)) {
@@ -371,77 +373,79 @@ export default function GameScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack}>
-          <Text style={styles.backText}>‹ Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>{game.titre}</Text>
-        <Text style={styles.subtitle}>
-          {difficulty.label} • {game.description}
-        </Text>
-      </View>
-
-      <View style={styles.statusRow}>
-        <View style={styles.statusBox}>
-          <Text style={styles.statusLabel}>Niveau</Text>
-          <Text style={styles.statusValue}>{difficulty.label}</Text>
+    <PagneBackground>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleBack}>
+            <Text style={styles.backText}>‹ Retour</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>{game.titre}</Text>
+          <Text style={styles.subtitle}>
+            {difficulty.label} • {game.description}
+          </Text>
         </View>
-        {gameId === "speedrun" && (
+
+        <View style={styles.statusRow}>
           <View style={styles.statusBox}>
-            <Text style={styles.statusLabel}>Temps</Text>
-            <Text style={styles.statusValue}>{timer}s</Text>
+            <Text style={styles.statusLabel}>Niveau</Text>
+            <Text style={styles.statusValue}>{difficulty.label}</Text>
+          </View>
+          {gameId === "speedrun" && (
+            <View style={styles.statusBox}>
+              <Text style={styles.statusLabel}>Temps</Text>
+              <Text style={styles.statusValue}>{timer}s</Text>
+            </View>
+          )}
+        </View>
+
+        {!started ? (
+          <View style={styles.cardIntro}>
+            <Text style={styles.description}>{game.description}</Text>
+            <TouchableOpacity style={styles.startButton} onPress={handleStart}>
+              <Text style={styles.startButtonText}>Démarrer</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.gameArea}>
+            {gameId === "memory" && renderMemoryGame()}
+            {gameId === "matching" && renderMatchingGame()}
+            {gameId === "speedrun" && renderSpeedrunGame()}
           </View>
         )}
-      </View>
 
-      {!started ? (
-        <View style={styles.cardIntro}>
-          <Text style={styles.description}>{game.description}</Text>
-          <TouchableOpacity style={styles.startButton} onPress={handleStart}>
-            <Text style={styles.startButtonText}>Démarrer</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.gameArea}>
-          {gameId === "memory" && renderMemoryGame()}
-          {gameId === "matching" && renderMatchingGame()}
-          {gameId === "speedrun" && renderSpeedrunGame()}
-        </View>
-      )}
-
-      {showResult && (
-        <Modal transparent animationType="fade" visible={showResult}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalCard}>
-              <Text style={styles.modalEmoji}>🏁</Text>
-              <Text style={styles.modalTitle}>Session terminée</Text>
-              <Text style={styles.modalText}>Score : {score}</Text>
-              <Text style={styles.modalText}>Coups : {moves}</Text>
-              <TouchableOpacity
-                style={styles.modalButton}
-                onPress={handleGameReset}
-              >
-                <Text style={styles.modalButtonText}>Recommencer</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalSecondaryButton}
-                onPress={handleBack}
-              >
-                <Text style={styles.modalSecondaryText}>Retour aux jeux</Text>
-              </TouchableOpacity>
+        {showResult && (
+          <Modal transparent animationType="fade" visible={showResult}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalCard}>
+                <Text style={styles.modalEmoji}>🏁</Text>
+                <Text style={styles.modalTitle}>Session terminée</Text>
+                <Text style={styles.modalText}>Score : {score}</Text>
+                <Text style={styles.modalText}>Coups : {moves}</Text>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={handleGameReset}
+                >
+                  <Text style={styles.modalButtonText}>Recommencer</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalSecondaryButton}
+                  onPress={handleBack}
+                >
+                  <Text style={styles.modalSecondaryText}>Retour aux jeux</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </Modal>
-      )}
-    </ScrollView>
+          </Modal>
+        )}
+      </ScrollView>
+    </PagneBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9F7F2",
+    backgroundColor: "transparent",
   },
   content: {
     paddingBottom: 30,

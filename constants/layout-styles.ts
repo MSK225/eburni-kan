@@ -5,7 +5,7 @@ import { EburniKanColors, EburniKanRadii, EburniKanSpacing } from '@/constants/t
 export const LayoutStyles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: EburniKanColors.background,
+    backgroundColor: "transparent",
   },
   content: {
     padding: EburniKanSpacing.md,

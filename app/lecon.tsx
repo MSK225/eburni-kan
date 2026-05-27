@@ -8,6 +8,7 @@ import {
   PrimaryButton,
 } from "@/components/design-system";
 import { EburniSection, ScreenHeader } from "@/components/layout";
+import { PagneBackground } from "@/components/immersion";
 import { VideoPlayer } from "@/components/ui/video-player";
 import { LayoutStyles } from "@/constants/layout-styles";
 import { LESSON_INTRO_VIDEOS } from "@/constants/media-assets";
@@ -56,97 +57,99 @@ export default function LeconScreen() {
   }
 
   return (
-    <ScrollView style={LayoutStyles.screen}>
-      <ScreenHeader
-        title={lecon.titre}
-        subtitle={lecon.niveau}
-        showBack
-        onBack={() => router.back()}
-      />
+    <PagneBackground>
+      <ScrollView style={LayoutStyles.screen}>
+        <ScreenHeader
+          title={lecon.titre}
+          subtitle={lecon.niveau}
+          showBack
+          onBack={() => router.back()}
+        />
 
-      <View style={LayoutStyles.content}>
-        {/* Vidéo intro — rotation par leçon */}
-        {lecon.id <= 5 && (
-          <View style={styles.videoContainer}>
-            <VideoPlayer
-              source={LESSON_INTRO_VIDEOS[lecon.id - 1]}
-              title="Vidéo d'introduction"
-            />
-            <BodyText size="sm" style={styles.videoCaption}>
-              Introduction vidéo à cette leçon
-            </BodyText>
-          </View>
-        )}
+        <View style={LayoutStyles.content}>
+          {/* Vidéo intro — rotation par leçon */}
+          {lecon.id <= 5 && (
+            <View style={styles.videoContainer}>
+              <VideoPlayer
+                source={LESSON_INTRO_VIDEOS[lecon.id - 1]}
+                title="Vidéo d'introduction"
+              />
+              <BodyText size="sm" style={styles.videoCaption}>
+                Introduction vidéo à cette leçon
+              </BodyText>
+            </View>
+          )}
 
-        {lecon.description ? (
-          <EburniSection title="📝 À propos">
-            <BodyText>{lecon.description}</BodyText>
-          </EburniSection>
-        ) : null}
+          {lecon.description ? (
+            <EburniSection title="📝 À propos">
+              <BodyText>{lecon.description}</BodyText>
+            </EburniSection>
+          ) : null}
 
-        {lecon.objectifs ? (
-          <EburniSection title="🎯 Objectifs">
-            {lecon.objectifs.map((obj, index) => (
-              <View key={index} style={styles.objectifRow}>
-                <Text style={styles.bullet}>•</Text>
-                <BodyText style={styles.objectifText}>{obj}</BodyText>
+          {lecon.objectifs ? (
+            <EburniSection title="🎯 Objectifs">
+              {lecon.objectifs.map((obj, index) => (
+                <View key={index} style={styles.objectifRow}>
+                  <Text style={styles.bullet}>•</Text>
+                  <BodyText style={styles.objectifText}>{obj}</BodyText>
+                </View>
+              ))}
+            </EburniSection>
+          ) : null}
+
+          {lecon.introduction ? (
+            <EburniSection title="💡 Introduction">
+              <BodyText>{lecon.introduction}</BodyText>
+            </EburniSection>
+          ) : null}
+
+          <EburniSection title="📚 Vocabulaire">
+            {lecon.contenu.map((item, index) => (
+              <View key={index} style={LayoutStyles.vocabCard}>
+                <MalinkeText>{item.malinke}</MalinkeText>
+                <BodyText size="sm" style={styles.prononciation}>
+                  {item.prononciation}
+                </BodyText>
+                <BodyText>{item.francais}</BodyText>
+                {"note" in item && item.note ? (
+                  <BodyText size="sm" style={styles.note}>
+                    💬 {item.note}
+                  </BodyText>
+                ) : null}
+                {item.exemple ? (
+                  <BodyText size="sm" style={styles.exemple}>
+                    Exemple : {item.exemple}
+                  </BodyText>
+                ) : null}
+                {"reponse" in item && item.reponse ? (
+                  <BodyText size="sm" style={styles.reponse}>
+                    Réponse : {item.reponse}
+                  </BodyText>
+                ) : null}
               </View>
             ))}
           </EburniSection>
-        ) : null}
 
-        {lecon.introduction ? (
-          <EburniSection title="💡 Introduction">
-            <BodyText>{lecon.introduction}</BodyText>
+          <EburniSection title="⏱ Durée estimée">
+            <BodyText>{lecon.duree}</BodyText>
           </EburniSection>
-        ) : null}
 
-        <EburniSection title="📚 Vocabulaire">
-          {lecon.contenu.map((item, index) => (
-            <View key={index} style={LayoutStyles.vocabCard}>
-              <MalinkeText>{item.malinke}</MalinkeText>
-              <BodyText size="sm" style={styles.prononciation}>
-                {item.prononciation}
-              </BodyText>
-              <BodyText>{item.francais}</BodyText>
-              {"note" in item && item.note ? (
-                <BodyText size="sm" style={styles.note}>
-                  💬 {item.note}
-                </BodyText>
-              ) : null}
-              {item.exemple ? (
-                <BodyText size="sm" style={styles.exemple}>
-                  Exemple : {item.exemple}
-                </BodyText>
-              ) : null}
-              {"reponse" in item && item.reponse ? (
-                <BodyText size="sm" style={styles.reponse}>
-                  Réponse : {item.reponse}
-                </BodyText>
-              ) : null}
-            </View>
-          ))}
-        </EburniSection>
+          {lecon.conseils ? (
+            <EburniSection title="💪 Conseils d'apprentissage">
+              <BodyText>{lecon.conseils}</BodyText>
+            </EburniSection>
+          ) : null}
 
-        <EburniSection title="⏱ Durée estimée">
-          <BodyText>{lecon.duree}</BodyText>
-        </EburniSection>
-
-        {lecon.conseils ? (
-          <EburniSection title="💪 Conseils d'apprentissage">
-            <BodyText>{lecon.conseils}</BodyText>
-          </EburniSection>
-        ) : null}
-
-        <PrimaryButton label="Démarrer le quiz" onPress={startQuiz} />
-        <PrimaryButton
-          label="Quitter"
-          variant="outline"
-          onPress={() => router.back()}
-          style={styles.quitBtn}
-        />
-      </View>
-    </ScrollView>
+          <PrimaryButton label="Démarrer le quiz" onPress={startQuiz} />
+          <PrimaryButton
+            label="Quitter"
+            variant="outline"
+            onPress={() => router.back()}
+            style={styles.quitBtn}
+          />
+        </View>
+      </ScrollView>
+    </PagneBackground>
   );
 }
 

@@ -18,6 +18,7 @@ import {
   NavText,
   PrimaryButton,
 } from '@/components/design-system';
+import { PagneBackground } from '@/components/immersion';
 import {
   EburniKanColors,
   EburniKanFonts,
@@ -61,91 +62,93 @@ export function AuthScreenContent() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.root}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled">
-        <View style={styles.hero}>
-          <View style={styles.badge}>
-            <NavText variant="primary" size="small" style={styles.badgeText}>
-              Bienvenue
-            </NavText>
-          </View>
-          <EburniLogo size="xl" style={styles.logo} />
-          <MalinkeText size="md" style={styles.slogan}>
-            Mandingue kan kalan duman
-          </MalinkeText>
-          <BodyText size="sm" muted style={styles.sloganFr}>
-            L&apos;apprentissage agréable de la langue mandingue
-          </BodyText>
-        </View>
-
-        <EburniCard style={styles.card}>
-          <NavText style={styles.cardTitle}>
-            {isSignUp ? 'Créer un compte' : 'Se connecter'}
-          </NavText>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Adresse email"
-            placeholderTextColor={EburniKanColors.textMuted}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Mot de passe"
-            placeholderTextColor={EburniKanColors.textMuted}
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-
-          <PrimaryButton
-            label={
-              loading
-                ? 'Chargement...'
-                : isSignUp
-                  ? 'Créer mon compte'
-                  : 'Se connecter'
-            }
-            loading={loading}
-            onPress={handleSubmit}
-            style={styles.submit}
-          />
-
-          <Pressable
-            style={styles.switchButton}
-            onPress={() => setIsSignUp(!isSignUp)}
-            accessibilityRole="button">
-            <BodyText size="sm" style={styles.switchText}>
-              {isSignUp
-                ? 'Vous avez déjà un compte ? Se connecter'
-                : 'Pas encore de compte ? S\u2019inscrire'}
+    <PagneBackground>
+      <KeyboardAvoidingView
+        style={styles.root}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled">
+          <View style={styles.hero}>
+            <View style={styles.badge}>
+              <NavText variant="primary" size="small" style={styles.badgeText}>
+                Bienvenue
+              </NavText>
+            </View>
+            <EburniLogo size="xl" style={styles.logo} />
+            <MalinkeText size="md" style={styles.slogan}>
+              Mandingue kan kalan duman
+            </MalinkeText>
+            <BodyText size="sm" muted style={styles.sloganFr}>
+              L&apos;apprentissage agréable de la langue mandingue
             </BodyText>
-          </Pressable>
-        </EburniCard>
+          </View>
 
-        <BodyText size="sm" muted style={styles.footer}>
-          En vous connectant, vous acceptez nos conditions d&apos;utilisation.
-        </BodyText>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          <EburniCard style={styles.card}>
+            <NavText style={styles.cardTitle}>
+              {isSignUp ? 'Créer un compte' : 'Se connecter'}
+            </NavText>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Adresse email"
+              placeholderTextColor={EburniKanColors.textMuted}
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Mot de passe"
+              placeholderTextColor={EburniKanColors.textMuted}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <PrimaryButton
+              label={
+                loading
+                  ? 'Chargement...'
+                  : isSignUp
+                    ? 'Créer mon compte'
+                    : 'Se connecter'
+              }
+              loading={loading}
+              onPress={handleSubmit}
+              style={styles.submit}
+            />
+
+            <Pressable
+              style={styles.switchButton}
+              onPress={() => setIsSignUp(!isSignUp)}
+              accessibilityRole="button">
+              <BodyText size="sm" style={styles.switchText}>
+                {isSignUp
+                  ? 'Vous avez déjà un compte ? Se connecter'
+                  : 'Pas encore de compte ? S\u2019inscrire'}
+              </BodyText>
+            </Pressable>
+          </EburniCard>
+
+          <BodyText size="sm" muted style={styles.footer}>
+            En vous connectant, vous acceptez nos conditions d&apos;utilisation.
+          </BodyText>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </PagneBackground>
   );
 }
 
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: EburniKanColors.background,
+    backgroundColor: "transparent",
   },
   scroll: {
     flexGrow: 1,

@@ -7,14 +7,12 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { PagneBackground } from "@/components/immersion";
 import { lecons } from "../../src/data/lecons";
 
 export default function JeuScreen() {
   const router = useRouter();
   const { id, difficulty } = useLocalSearchParams();
-  const [gameState, setGameState] = useState("menu");
-  const [score, setScore] = useState(0);
-
   const currentDifficulty = (difficulty as string) || "moyen";
 
   const getWordPairs = (diff: "facile" | "moyen" | "difficile") => {
@@ -34,41 +32,49 @@ export default function JeuScreen() {
 
   if (id === "memory") {
     return (
-      <MemoryGame
-        wordPairs={wordPairs}
-        difficulty={currentDifficulty}
-        onBack={() => router.back()}
-      />
+      <PagneBackground>
+        <MemoryGame
+          wordPairs={wordPairs}
+          difficulty={currentDifficulty}
+          onBack={() => router.back()}
+        />
+      </PagneBackground>
     );
   }
 
   if (id === "matching") {
     return (
-      <MatchingGame
-        wordPairs={wordPairs}
-        difficulty={currentDifficulty}
-        onBack={() => router.back()}
-      />
+      <PagneBackground>
+        <MatchingGame
+          wordPairs={wordPairs}
+          difficulty={currentDifficulty}
+          onBack={() => router.back()}
+        />
+      </PagneBackground>
     );
   }
 
   if (id === "speedrun") {
     return (
-      <SpeedrunGame
-        lecons={lecons}
-        difficulty={currentDifficulty}
-        onBack={() => router.back()}
-      />
+      <PagneBackground>
+        <SpeedrunGame
+          lecons={lecons}
+          difficulty={currentDifficulty}
+          onBack={() => router.back()}
+        />
+      </PagneBackground>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text>Jeu non trouvé</Text>
-      <TouchableOpacity style={styles.bouton} onPress={() => router.back()}>
-        <Text style={styles.boutonTexte}>Retour</Text>
-      </TouchableOpacity>
-    </View>
+    <PagneBackground>
+      <View style={styles.container}>
+        <Text>Jeu non trouvé</Text>
+        <TouchableOpacity style={styles.bouton} onPress={() => router.back()}>
+          <Text style={styles.boutonTexte}>Retour</Text>
+        </TouchableOpacity>
+      </View>
+    </PagneBackground>
   );
 }
 
@@ -90,7 +96,7 @@ function MemoryGame({ wordPairs, difficulty, onBack }: any) {
   const config = getGameConfig(difficulty);
   const gamePairs = wordPairs.slice(0, config.pairs);
 
-  const [pairs, setPairs] = useState(
+  const [pairs] = useState(
     gamePairs
       .flatMap((p: any) => [
         {
@@ -466,7 +472,7 @@ function SpeedrunGame({ lecons, difficulty, onBack }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9F7F2" },
+  container: { flex: 1, backgroundColor: "transparent" },
   header: { backgroundColor: "#1A237E", padding: 24, paddingTop: 50 },
   retour: { marginBottom: 16 },
   retourTexte: { color: "#FBC02D", fontSize: 16, fontWeight: "600" },

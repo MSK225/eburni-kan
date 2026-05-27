@@ -19,14 +19,14 @@ interface VideoCategory {
     title: string;
     icon: string;
     description: string;
-    videos: Array<{
+    videos: {
         id: number;
         title: string;
         description: string;
         source: any;
         thumbnail: any;
         duration: string;
-    }>;
+    }[];
 }
 
 // Déplacer la définition en dehors du component pour éviter les re-renders inutiles

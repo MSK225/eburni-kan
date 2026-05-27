@@ -18,6 +18,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { GAME_IMAGES } from "@/constants/media-assets";
+import { PagneBackground } from "@/components/immersion";
 import { useProgress } from "../src/context/ProgressContext";
 
 interface Game {
@@ -101,119 +102,121 @@ export default function JeuxScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Header */}
-      <Animated.View
-        style={styles.header}
-        entering={FadeIn.duration(400)}
-      >
-        <TouchableOpacity style={styles.retour} onPress={() => router.back()}>
-          <Text style={styles.retourTexte}>‹ Retour</Text>
-        </TouchableOpacity>
-        <Text style={styles.titre}>🎮 Jeux</Text>
-        <Text style={styles.sousTitre}>Choisissez votre difficulté</Text>
-      </Animated.View>
+    <PagneBackground>
+      <ScrollView style={styles.container}>
+        {/* Header */}
+        <Animated.View
+          style={styles.header}
+          entering={FadeIn.duration(400)}
+        >
+          <TouchableOpacity style={styles.retour} onPress={() => router.back()}>
+            <Text style={styles.retourTexte}>‹ Retour</Text>
+          </TouchableOpacity>
+          <Text style={styles.titre}>🎮 Jeux</Text>
+          <Text style={styles.sousTitre}>Choisissez votre difficulté</Text>
+        </Animated.View>
 
-      {/* Liste des jeux */}
-      <View style={styles.listeJeux}>
-        {games.map((game, idx) => (
-          <GameCard
-            key={game.id}
-            game={game}
-            delay={idx * 100}
-            isHovered={hoveredGameId === game.id}
-            onHoverStart={() => setHoveredGameId(game.id)}
-            onHoverEnd={() => setHoveredGameId(null)}
-            onPress={() => handleGameSelect(game)}
-          />
-        ))}
-      </View>
-
-      {/* Section info */}
-      <Animated.View
-        style={styles.info}
-        entering={FadeInDown.delay(400).duration(400)}
-      >
-        <Text style={styles.infoTitre}>💡 Conseil</Text>
-        <Text style={styles.infoTexte}>
-          Commencez par le niveau Facile pour vous familiariser avec les jeux,
-          puis progressez vers les niveaux plus difficiles pour améliorer vos
-          compétences !
-        </Text>
-      </Animated.View>
-
-      {/* Modal de sélection de difficulté */}
-      <Modal
-        visible={difficultyModalVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setDifficultyModalVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View
-            style={styles.modalContent}
-            entering={ZoomIn.duration(300)}
-            exiting={FadeOut.duration(200)}
-          >
-            <Text style={styles.modalTitle}>
-              {selectedGame ? selectedGame.titre : ""}
-            </Text>
-            <Text style={styles.modalSubtitle}>
-              Niveau recommandé : {userDifficulty}
-            </Text>
-            <Text style={styles.modalSubtitle}>
-              Choisissez votre niveau de difficulté
-            </Text>
-
-            <View style={styles.difficultyOptions}>
-              {difficulties.map((diff, idx) => (
-                <Animated.View
-                  key={diff.id}
-                  entering={FadeInDown.delay(idx * 80).duration(300)}
-                >
-                  <TouchableOpacity
-                    style={[
-                      styles.difficultyOption,
-                      { borderLeftColor: diff.color },
-                      selectedDifficulty === diff.id &&
-                      styles.difficultyOptionSelected,
-                    ]}
-                    onPress={() => {
-                      setSelectedDifficulty(diff.id);
-                      handleDifficultySelect(diff.id);
-                    }}
-                  >
-                    <View style={styles.difficultyHeader}>
-                      <Text
-                        style={[styles.difficultyLabel, { color: diff.color }]}
-                      >
-                        {diff.label}
-                      </Text>
-                      <View
-                        style={[
-                          styles.difficultyDot,
-                          { backgroundColor: diff.color },
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.difficultyDescription}>
-                      {diff.description}
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => setDifficultyModalVisible(false)}
-            >
-              <Text style={styles.cancelTexte}>Annuler</Text>
-            </TouchableOpacity>
-          </Animated.View>
+        {/* Liste des jeux */}
+        <View style={styles.listeJeux}>
+          {games.map((game, idx) => (
+            <GameCard
+              key={game.id}
+              game={game}
+              delay={idx * 100}
+              isHovered={hoveredGameId === game.id}
+              onHoverStart={() => setHoveredGameId(game.id)}
+              onHoverEnd={() => setHoveredGameId(null)}
+              onPress={() => handleGameSelect(game)}
+            />
+          ))}
         </View>
-      </Modal>
-    </ScrollView>
+
+        {/* Section info */}
+        <Animated.View
+          style={styles.info}
+          entering={FadeInDown.delay(400).duration(400)}
+        >
+          <Text style={styles.infoTitre}>💡 Conseil</Text>
+          <Text style={styles.infoTexte}>
+            Commencez par le niveau Facile pour vous familiariser avec les jeux,
+            puis progressez vers les niveaux plus difficiles pour améliorer vos
+            compétences !
+          </Text>
+        </Animated.View>
+
+        {/* Modal de sélection de difficulté */}
+        <Modal
+          visible={difficultyModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setDifficultyModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <Animated.View
+              style={styles.modalContent}
+              entering={ZoomIn.duration(300)}
+              exiting={FadeOut.duration(200)}
+            >
+              <Text style={styles.modalTitle}>
+                {selectedGame ? selectedGame.titre : ""}
+              </Text>
+              <Text style={styles.modalSubtitle}>
+                Niveau recommandé : {userDifficulty}
+              </Text>
+              <Text style={styles.modalSubtitle}>
+                Choisissez votre niveau de difficulté
+              </Text>
+
+              <View style={styles.difficultyOptions}>
+                {difficulties.map((diff, idx) => (
+                  <Animated.View
+                    key={diff.id}
+                    entering={FadeInDown.delay(idx * 80).duration(300)}
+                  >
+                    <TouchableOpacity
+                      style={[
+                        styles.difficultyOption,
+                        { borderLeftColor: diff.color },
+                        selectedDifficulty === diff.id &&
+                        styles.difficultyOptionSelected,
+                      ]}
+                      onPress={() => {
+                        setSelectedDifficulty(diff.id);
+                        handleDifficultySelect(diff.id);
+                      }}
+                    >
+                      <View style={styles.difficultyHeader}>
+                        <Text
+                          style={[styles.difficultyLabel, { color: diff.color }]}
+                        >
+                          {diff.label}
+                        </Text>
+                        <View
+                          style={[
+                            styles.difficultyDot,
+                            { backgroundColor: diff.color },
+                          ]}
+                        />
+                      </View>
+                      <Text style={styles.difficultyDescription}>
+                        {diff.description}
+                      </Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                ))}
+              </View>
+
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setDifficultyModalVisible(false)}
+              >
+                <Text style={styles.cancelTexte}>Annuler</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </PagneBackground>
   );
 }
 
@@ -306,7 +309,7 @@ function GameCard({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9F7F2",
+    backgroundColor: "transparent",
   },
   header: {
     backgroundColor: "#1A237E",

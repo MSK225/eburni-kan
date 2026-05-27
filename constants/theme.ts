@@ -7,6 +7,7 @@ import { Platform } from 'react-native';
 /** Couleurs officielles */
 export const EburniKanColors = {
   primary: '#1A237E',
+  secondary: '#E8EAF6',
   accent: '#FBC02D',
   background: '#F9F7F2',
   text: '#212121',
