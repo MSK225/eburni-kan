@@ -13,7 +13,7 @@ import { IconSymbol } from "./icon-symbol";
 const { width } = Dimensions.get("window");
 
 interface VideoPlayerProps {
-  source: any; // Peut être une URI locale ou distante
+  source: any;
   title?: string;
   onClose?: () => void;
 }
@@ -22,13 +22,12 @@ export function VideoPlayer({ source, title, onClose }: VideoPlayerProps) {
   const videoRef = useRef<Video>(null);
   const [status, setStatus] = useState<any>({});
   const [isPlaying, setIsPlaying] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(width);
 
-  // Détecter si c'est une URL YouTube
   const isYouTubeUrl =
     typeof source === "string" &&
     (source.includes("youtube.com") || source.includes("youtu.be"));
 
-  // Convertir les URLs YouTube en URLs embed
   const getYouTubeEmbedUrl = (url: string) => {
     if (url.includes("youtu.be/")) {
       const videoId = url.split("youtu.be/")[1].split("?")[0];
@@ -63,12 +62,14 @@ export function VideoPlayer({ source, title, onClose }: VideoPlayerProps) {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  // Pour les vidéos YouTube, utiliser WebView
   if (isYouTubeUrl) {
     const embedUrl = getYouTubeEmbedUrl(source);
 
     return (
-      <View style={styles.container}>
+      <View 
+        style={styles.container}
+        onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+      >
         <View style={styles.header}>
           {title && <Text style={styles.title}>{title}</Text>}
           {onClose && (
@@ -79,7 +80,7 @@ export function VideoPlayer({ source, title, onClose }: VideoPlayerProps) {
         </View>
 
         <WebView
-          style={styles.webView}
+          style={[styles.webView, { width: containerWidth, height: containerWidth * 0.5625 }]}
           source={{ uri: embedUrl }}
           allowsFullscreenVideo={true}
           javaScriptEnabled={true}
@@ -99,9 +100,11 @@ export function VideoPlayer({ source, title, onClose }: VideoPlayerProps) {
     );
   }
 
-  // Pour les vidéos locales/distantes normales, utiliser le composant Video
   return (
-    <View style={styles.container}>
+    <View 
+      style={styles.container}
+      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+    >
       <View style={styles.header}>
         {title && <Text style={styles.title}>{title}</Text>}
         {onClose && (
@@ -113,7 +116,7 @@ export function VideoPlayer({ source, title, onClose }: VideoPlayerProps) {
 
       <Video
         ref={videoRef}
-        style={styles.video}
+        style={[styles.video, { width: containerWidth, height: containerWidth * 0.5625 }]}
         source={source}
         useNativeControls={false}
         resizeMode={ResizeMode.CONTAIN}
@@ -162,6 +165,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
     margin: 16,
+    width: "100%",
   },
   header: {
     flexDirection: "row",
@@ -180,8 +184,8 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   video: {
-    width: width - 32,
-    height: (width - 32) * 0.5625, // Ratio 16:9
+    width: "100%",
+    aspectRatio: 16 / 9,
   },
   controls: {
     padding: 16,
@@ -214,8 +218,8 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   webView: {
-    width: width - 32,
-    height: (width - 32) * 0.5625, // Ratio 16:9
+    width: "100%",
+    aspectRatio: 16 / 9,
   },
   youtubeControls: {
     padding: 16,
