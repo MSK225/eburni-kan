@@ -19,11 +19,24 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { EburniLogo } from "@/components/brand";
-import { BodyText, MalinkeText, NavText, Title } from "@/components/design-system";
-import { DuotoneImage, LevelSymbol, PagneBackground } from "@/components/immersion";
+import {
+  BodyText,
+  MalinkeText,
+  NavText,
+  Title,
+} from "@/components/design-system";
+import {
+  DuotoneImage,
+  LevelSymbol,
+  PagneBackground,
+} from "@/components/immersion";
 import { DUOTONE_IMAGES } from "@/constants/media-assets";
 import { EburniTextStyles } from "@/constants/text-styles";
-import { EburniKanColors, EburniKanRadii, EburniKanSpacing } from "@/constants/theme";
+import {
+  EburniKanColors,
+  EburniKanRadii,
+  EburniKanSpacing,
+} from "@/constants/theme";
 import { useProgress } from "../../src/context/ProgressContext";
 import { lecons } from "../../src/data/lecons";
 
@@ -45,17 +58,38 @@ function AnimatedModuleCard({
     transform: [{ scale: scale.value }],
   }));
   return (
-    <Animated.View entering={FadeInDown.delay(delay).duration(400).springify()} style={animStyle}>
+    <Animated.View
+      entering={FadeInDown.delay(delay).duration(400).springify()}
+      style={animStyle}
+    >
       <TouchableOpacity
         style={styles.moduleCard}
         onPress={onPress}
-        onPressIn={() => { scale.value = withSpring(0.94, { damping: 12, mass: 0.6 }); }}
-        onPressOut={() => { scale.value = withSpring(1, { damping: 12, mass: 0.6 }); }}
+        onPressIn={() => {
+          scale.value = withSpring(0.94, { damping: 12, mass: 0.6 });
+        }}
+        onPressOut={() => {
+          scale.value = withSpring(1, { damping: 12, mass: 0.6 });
+        }}
         activeOpacity={1}
       >
         <Text style={styles.moduleEmoji}>{emoji}</Text>
-        <NavText style={styles.moduleNom}>{nom}</NavText>
-        <BodyText size="sm" muted style={styles.moduleDesc}>{desc}</BodyText>
+        <NavText
+          style={styles.moduleNom}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {nom}
+        </NavText>
+        <BodyText
+          size="sm"
+          muted
+          style={styles.moduleDesc}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {desc}
+        </BodyText>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -123,99 +157,123 @@ export default function HomeScreen() {
 
   return (
     <PagneBackground>
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <MalinkeText size="lg" style={styles.salutation}>
-            I ni ce 👋
-          </MalinkeText>
-          <BodyText style={styles.sousTitre}>Découvre ton chemin en bambara</BodyText>
+      <ScrollView style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <MalinkeText size="lg" style={styles.salutation}>
+              I ni ce 👋
+            </MalinkeText>
+            <BodyText style={styles.sousTitre}>
+              Découvre ton chemin en bambara
+            </BodyText>
+          </View>
+          <EburniLogo size="sm" style={styles.headerLogo} />
         </View>
-        <EburniLogo size="sm" style={styles.headerLogo} />
-      </View>
 
-      <Animated.View style={[styles.carteMotDuJour, wordPulseStyle]} entering={FadeInUp.duration(500)}>
-        <NavText style={styles.carteLabel}>✨ Mot du jour</NavText>
-        <MalinkeText size="lg" style={styles.motDuJour}>
-          {motDuJour.malinke}
-        </MalinkeText>
-        <BodyText style={styles.traduction}>
-          {motDuJour.francais} — Bambara
-        </BodyText>
-        <BodyText size="sm" style={styles.prononciation}>
-          🔊 {motDuJour.prononciation}
-        </BodyText>
-        <BodyText size="sm" style={styles.leconSource}>
-          De la leçon : {motDuJour.lecon}
-        </BodyText>
-      </Animated.View>
-
-      <View style={styles.carteProgression}>
-        <NavText variant="text" style={styles.progressionTitre}>
-          🔥 Ta progression
-        </NavText>
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={EburniTextStyles.statNumber}>{completedLessons}</Text>
-            <BodyText size="sm" muted style={styles.statLabel}>
-              Leçons finies
-            </BodyText>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={EburniTextStyles.statNumber}>{progress.quizTotal}</Text>
-            <BodyText size="sm" muted style={styles.statLabel}>
-              Questions répond.
-            </BodyText>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={EburniTextStyles.statNumber}>{quizAccuracy}%</Text>
-            <BodyText size="sm" muted style={styles.statLabel}>
-              Précision quiz
-            </BodyText>
-          </View>
-        </View>
-        <LevelSymbol difficulty={difficulty} style={styles.levelRow} />
-        <BodyText size="sm" muted style={styles.progressionSummary}>
-          Niveau recommandé : {difficulty}
-        </BodyText>
-      </View>
-
-      <Title variant="primary" size="small" style={styles.sectionTitre}>
-        Modules
-      </Title>
-
-      <View style={styles.grilleModules}>
-        <AnimatedModuleCard
-          emoji="📚" nom="Cours" desc="Leçons par niveaux"
-          delay={0} onPress={() => router.push("/cours")}
-        />
-        <AnimatedModuleCard
-          emoji="🎮" nom="Jeux" desc="Memory & Quiz"
-          delay={80} onPress={() => router.push("/jeux")}
-        />
-        <AnimatedModuleCard
-          emoji="🌍" nom="Culture" desc="Proverbes & Contes"
-          delay={160} onPress={() => router.push("/culture")}
-        />
-        <AnimatedModuleCard
-          emoji="🏆" nom="Profil" desc="Badges & Certificats"
-          delay={240} onPress={() => router.push("/profil")}
-        />
-      </View>
-
-      <View style={styles.proverbeWrap}>
-        <DuotoneImage source={DUOTONE_IMAGES.savane} style={styles.proverbeDuotone} />
-        <View style={styles.carteProverbe}>
-          <NavText style={styles.proverbeLabel}>📜 Proverbe du jour</NavText>
-          <MalinkeText style={styles.proverbeTexte}>
-            &ldquo;Mogoya ka ca siya la&rdquo;
+        <Animated.View
+          style={[styles.carteMotDuJour, wordPulseStyle]}
+          entering={FadeInUp.duration(500)}
+        >
+          <NavText style={styles.carteLabel}>✨ Mot du jour</NavText>
+          <MalinkeText size="lg" style={styles.motDuJour}>
+            {motDuJour.malinke}
           </MalinkeText>
-          <BodyText size="sm" style={styles.proverbeTraduction}>
-            L&apos;humanité est plus grande que l&apos;ethnie — Bambara
+          <BodyText style={styles.traduction}>
+            {motDuJour.francais} — Bambara
+          </BodyText>
+          <BodyText size="sm" style={styles.prononciation}>
+            🔊 {motDuJour.prononciation}
+          </BodyText>
+          <BodyText size="sm" style={styles.leconSource}>
+            De la leçon : {motDuJour.lecon}
+          </BodyText>
+        </Animated.View>
+
+        <View style={styles.carteProgression}>
+          <NavText variant="text" style={styles.progressionTitre}>
+            🔥 Ta progression
+          </NavText>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={EburniTextStyles.statNumber}>
+                {completedLessons}
+              </Text>
+              <BodyText size="sm" muted style={styles.statLabel}>
+                Leçons finies
+              </BodyText>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={EburniTextStyles.statNumber}>
+                {progress.quizTotal}
+              </Text>
+              <BodyText size="sm" muted style={styles.statLabel}>
+                Questions répond.
+              </BodyText>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={EburniTextStyles.statNumber}>{quizAccuracy}%</Text>
+              <BodyText size="sm" muted style={styles.statLabel}>
+                Précision quiz
+              </BodyText>
+            </View>
+          </View>
+          <LevelSymbol difficulty={difficulty} style={styles.levelRow} />
+          <BodyText size="sm" muted style={styles.progressionSummary}>
+            Niveau recommandé : {difficulty}
           </BodyText>
         </View>
-      </View>
-    </ScrollView>
+
+        <Title variant="primary" size="small" style={styles.sectionTitre}>
+          Modules
+        </Title>
+
+        <View style={styles.grilleModules}>
+          <AnimatedModuleCard
+            emoji="📚"
+            nom="Cours"
+            desc="Leçons par niveaux"
+            delay={0}
+            onPress={() => router.push("/cours")}
+          />
+          <AnimatedModuleCard
+            emoji="🎮"
+            nom="Jeux"
+            desc="Memory & Quiz"
+            delay={80}
+            onPress={() => router.push("/jeux")}
+          />
+          <AnimatedModuleCard
+            emoji="🌍"
+            nom="Culture"
+            desc="Proverbes & Contes"
+            delay={160}
+            onPress={() => router.push("/culture")}
+          />
+          <AnimatedModuleCard
+            emoji="🏆"
+            nom="Profil"
+            desc="Badges & Certificats"
+            delay={240}
+            onPress={() => router.push("/profil")}
+          />
+        </View>
+
+        <View style={styles.proverbeWrap}>
+          <DuotoneImage
+            source={DUOTONE_IMAGES.savane}
+            style={styles.proverbeDuotone}
+          />
+          <View style={styles.carteProverbe}>
+            <NavText style={styles.proverbeLabel}>📜 Proverbe du jour</NavText>
+            <MalinkeText style={styles.proverbeTexte}>
+              &ldquo;Mogoya ka ca siya la&rdquo;
+            </MalinkeText>
+            <BodyText size="sm" style={styles.proverbeTraduction}>
+              L&apos;humanité est plus grande que l&apos;ethnie — Bambara
+            </BodyText>
+          </View>
+        </View>
+      </ScrollView>
     </PagneBackground>
   );
 }
@@ -335,24 +393,37 @@ const styles = StyleSheet.create({
     width: "47%",
     marginBottom: EburniKanSpacing.sm,
     elevation: 4,
-    alignItems: "center",
+    alignItems: "stretch",
+    justifyContent: "center",
     borderBottomWidth: 4,
     borderBottomColor: EburniKanColors.accent,
     shadowColor: "#FBC02D",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 6,
+    minHeight: 120,
   },
   moduleEmoji: {
-    fontSize: 40,
+    fontSize: 36,
     marginBottom: 4,
+    textAlign: "center",
+    alignSelf: "center",
   },
   moduleNom: {
-    marginTop: EburniKanSpacing.sm,
+    marginTop: EburniKanSpacing.xs,
+    textAlign: "center",
+    fontSize: 14,
+    flexShrink: 1,
+    width: "100%",
+    flexWrap: "wrap",
   },
   moduleDesc: {
     marginTop: EburniKanSpacing.xs,
     textAlign: "center",
+    fontSize: 11,
+    flexShrink: 1,
+    width: "100%",
+    flexWrap: "wrap",
   },
   levelRow: {
     marginTop: EburniKanSpacing.md,
